@@ -7,10 +7,15 @@ export default class Cube extends THREE.Mesh {
     this.letters = letters.slice(0, 4).map((letter) => letter.toString());
     this.cubeSize = 0.5;
     // Geometry and material
-    this.geometry = new THREE.BoxGeometry(this.cubeSize, this.cubeSize, this.cubeSize);
+    this.geometry = new THREE.BoxGeometry(
+      this.cubeSize,
+      this.cubeSize,
+      this.cubeSize
+    );
 
+    // top, bottom, left, right, front, back
     // Create canvas-based textures for each face
-    const textures = [];
+    this.textures = [];
     for (let i = 0; i < 6; i++) {
       const canvas = document.createElement("canvas");
       // Increase resolution for higher quality
@@ -34,16 +39,21 @@ export default class Cube extends THREE.Mesh {
 
       // Create texture from canvas
       const texture = new THREE.CanvasTexture(canvas);
+      // Ensure the center of rotation is set correctly (middle of the texture)
+      texture.center.set(0.5, 0.5);
       texture.needsUpdate = true;
-      textures.push(texture);
+      this.textures.push(texture);
     }
 
     // Apply materials to cube faces
-    //, color: new THREE.Color('white').convertSRGBToLinear()
-    this.material = textures.map(
-      (texture) => new THREE.MeshStandardMaterial({ map: texture,   color: new THREE.Color('white').convertSRGBToLinear() })
+    this.material = this.textures.map(
+      (texture) =>
+        new THREE.MeshStandardMaterial({
+          map: texture,
+          color: new THREE.Color("white").convertSRGBToLinear(),
+        })
     );
-    
+
     this.cubeActive = false;
   }
 
@@ -52,8 +62,8 @@ export default class Cube extends THREE.Mesh {
   }
 
   onResize(width, height, aspect) {
-    this.cubeSize = width / 5; // 1/5 of the full width
-    this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
+    //this.cubeSize = width / 5; // 1/5 of the full width
+    //this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
   }
 
   onPointerOver(e) {
@@ -65,13 +75,26 @@ export default class Cube extends THREE.Mesh {
 
   onPointerOut(e) {
     this.material.forEach((mat) => {
-      mat.color.set("orange");
+      mat.color.set("white");
       mat.color.convertSRGBToLinear();
     });
   }
 
   onClick(e) {
-    this.cubeActive = !this.cubeActive;
-    this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
+    //this.cubeActive = !this.cubeActive;
+    //this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
+    this.rotateOnAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+    this.textures.forEach((texture) => {
+      this.rotateFace(texture);
+    });
+  }
+
+  // Rotate a specific face of the cube
+  rotateFace(texture, angle = -1 * Math.PI / 2) {
+    // Update the rotation of the texture
+    texture.rotation += angle; // Increment rotation angle
+
+    // Trigger texture update
+    texture.needsUpdate = true;
   }
 }
