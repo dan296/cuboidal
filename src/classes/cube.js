@@ -12,7 +12,14 @@ export default class Cube extends THREE.Mesh {
       this.cubeSize,
       this.cubeSize
     );
+    // Add edges to the cube
+    /*const edges = new THREE.EdgesGeometry(this.geometry);
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+    const lineSegments = new THREE.LineSegments(edges, lineMaterial);
 
+    // Add the edges to the scene or the cube object
+    this.add(lineSegments);
+    */
     // top, bottom, left, right, front, back
     // Create canvas-based textures for each face
     this.textures = [];
@@ -90,7 +97,7 @@ export default class Cube extends THREE.Mesh {
   }
 
   // Rotate a specific face of the cube
-  rotateFace(texture, angle = -1 * Math.PI / 2) {
+  rotateFace(texture, angle = (-1 * Math.PI) / 2) {
     // Update the rotation of the texture
     texture.rotation += angle; // Increment rotation angle
 

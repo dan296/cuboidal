@@ -42,28 +42,36 @@ const letters = ["A", "B", "C", "D"]; // Letters for each face
 
 // Calculate the positions for the wireframe
 const offsets = [-1, 1]; // To position cubes on opposite ends of the larger cube
+const positions = new Set(); // Use Set to store unique positions
+
+// Helper function to create a unique string for the position
+function positionKey(x, y, z) {
+  return `${x},${y},${z}`; // Create a string key like "1,-1,1"
+}
+function addCube(x, y, z) {
+  const key = positionKey(x, y, z);
+  if (positions.has(key)) return; // Skip if the position already exists
+  const cube = new Cube(letters);
+  cube.position.set(x, y, z);
+  scene.add(cube);
+  positions.add(key); // Store the unique key in the Set
+}
+
 for (let x of offsets) {
   for (let y of offsets) {
     for (let i = 0; i < edgeCubes; i++) {
       const position = -1 + i * spacing; // Incremental positions for the edge cubes
-
+      
       // Add cubes along the X edges
-      const cubeX = new Cube(letters);
-      cubeX.position.set(position, y, x);
-      scene.add(cubeX);
+      addCube(position, y, x);
+      addCube(x, position, y);
+      addCube(y, x, position);
 
-      // Add cubes along the Y edges
-      const cubeY = new Cube(letters);
-      cubeY.position.set(x, position, y);
-      scene.add(cubeY);
-
-      // Add cubes along the Z edges
-      const cubeZ = new Cube(letters);
-      cubeZ.position.set(y, x, position);
-      scene.add(cubeZ);
     }
   }
 }
+
+console.log(positions);
 
 // responsive
 function resize() {
@@ -137,7 +145,6 @@ window.addEventListener("pointermove", (e) => {
       delete hovered[key];
     }
   });
-  
 
   if (hit && hit.object) {
     // If a hit has not been flagged as hovered we must call onPointerOver
@@ -155,6 +162,7 @@ window.addEventListener("click", (e) => {
   if (hit && hit.object && typeof hit.object.onClick === "function") {
     hit.object.onClick(hit);
   }
+  console.log(scene.children);
 });
 
 // Animation loop
