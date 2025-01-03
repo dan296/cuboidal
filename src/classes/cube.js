@@ -1,10 +1,10 @@
 import * as THREE from "three";
 export default class Cube extends THREE.Mesh {
-  constructor(letters = []) {
+  constructor(letters = [], fontDivider = 2, disabled = false, color = "white") {
     super();
-
-    // Limit letters to max 4 and ensure array contains strings
-    this.letters = letters.slice(0, 4).map((letter) => letter.toString());
+    this.disabled = disabled;
+    this.color = color;
+    this.letters = letters;
     this.cubeSize = 0.5;
     // Geometry and material
     this.geometry = new THREE.BoxGeometry(
@@ -12,14 +12,6 @@ export default class Cube extends THREE.Mesh {
       this.cubeSize,
       this.cubeSize
     );
-    // Add edges to the cube
-    /*const edges = new THREE.EdgesGeometry(this.geometry);
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-    const lineSegments = new THREE.LineSegments(edges, lineMaterial);
-
-    // Add the edges to the scene or the cube object
-    this.add(lineSegments);
-    */
     // top, bottom, left, right, front, back
     // Create canvas-based textures for each face
     this.textures = [];
@@ -32,13 +24,13 @@ export default class Cube extends THREE.Mesh {
       const ctx = canvas.getContext("2d");
 
       // Fill background
-      ctx.fillStyle = "white";
+      ctx.fillStyle = this.color;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Draw letter if it exists for the face (letters[0-3] map to faces 0-3)
       if (i < this.letters.length) {
         ctx.fillStyle = "black";
-        ctx.font = `${resolution / 2}px Arial`;
+        ctx.font = `${resolution / fontDivider}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(this.letters[i], canvas.width / 2, canvas.height / 2);
@@ -57,7 +49,7 @@ export default class Cube extends THREE.Mesh {
       (texture) =>
         new THREE.MeshStandardMaterial({
           map: texture,
-          color: new THREE.Color("white").convertSRGBToLinear(),
+          color: new THREE.Color(this.color).convertSRGBToLinear(),
         })
     );
 
@@ -74,26 +66,32 @@ export default class Cube extends THREE.Mesh {
   }
 
   onPointerOver(e) {
-    this.material.forEach((mat) => {
-      mat.color.set("hotpink");
-      mat.color.convertSRGBToLinear();
-    });
+    if (!this.disabled) {
+      this.material.forEach((mat) => {
+        mat.color.set("hotpink");
+        mat.color.convertSRGBToLinear();
+      });
+    }
   }
 
   onPointerOut(e) {
-    this.material.forEach((mat) => {
-      mat.color.set("white");
-      mat.color.convertSRGBToLinear();
-    });
+    if (!this.disabled) {
+      this.material.forEach((mat) => {
+        mat.color.set(this.color);
+        mat.color.convertSRGBToLinear();
+      });
+    }
   }
 
   onClick(e) {
-    //this.cubeActive = !this.cubeActive;
-    //this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
-    this.rotateOnAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
-    this.textures.forEach((texture) => {
-      this.rotateFace(texture);
-    });
+    if (!this.disabled) {
+      //this.cubeActive = !this.cubeActive;
+      //this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
+      this.rotateOnAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+      this.textures.forEach((texture) => {
+        this.rotateFace(texture);
+      });
+    }
   }
 
   // Rotate a specific face of the cube
