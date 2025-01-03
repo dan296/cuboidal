@@ -126,12 +126,14 @@ window.addEventListener("pointermove", (e) => {
   }
 });
 
-window.addEventListener("click", (e) => {
+/*window.addEventListener("click", (e) => {
+  if(previousMousePosition.x != e.clientX || previousMousePosition.y != e.clientY) return;
+  previousMousePosition = { x: e.clientX, y: e.clientY };
   const hit = intersects[0];
   if (hit && hit.object && typeof hit.object.onClick === "function") {
     hit.object.onClick(hit);
   }
-});
+});*/
 
 let selectedCube = null; // The cube currently being dragged
 let hoverCube = null; // The cube currently being hovered
@@ -142,7 +144,8 @@ let dragPlaneIntersectPoint = new THREE.Vector3(); // Point on the plane
 // Function to update the mouse position
 function onMouseMove(event) {
   mouse.set((event.clientX / width) * 2 - 1, -(event.clientY / height) * 2 + 1);
-  if (isCubeDragging && selectedCube) {
+  if (selectedCube) {
+    isCubeDragging = true;
     // Update raycaster to project the mouse onto 3D space
     raycaster.setFromCamera(mouse, camera);
     const intersected = raycaster.ray.intersectPlane(
@@ -165,7 +168,7 @@ function onMouseMove(event) {
     // Rotate the entire scene based on mouse movement
     scene.rotation.y += toRadians(deltaMove.x) * 0.5;
     scene.rotation.x += toRadians(deltaMove.y) * 0.5;
-    
+
     previousMousePosition = { x: event.clientX, y: event.clientY };
   }
   // Move the mesh to the world position
@@ -179,7 +182,6 @@ function onMouseDown(event) {
   if (intersects.length > 0) {
     selectedCube = intersects[0].object;
     if (selectedCube.disabled) return; // Skip if the cube is disabled
-    isCubeDragging = true;
     lastCubePosition = selectedCube.position.clone();
 
     // Create a drag plane
@@ -201,24 +203,43 @@ function onMouseDown(event) {
  */
   } else {
     isDragging = true;
-    previousMousePosition = { x: event.clientX, y: event.clientY };
     isCubeDragging = false;
   }
+  previousMousePosition = { x: event.clientX, y: event.clientY };
 }
 
 // Function to handle mouse up (end dragging)
 function onMouseUp(event) {
-  if (isCubeDragging && selectedCube) {
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene.children);
+  if (selectedCube) {
+    if (isCubeDragging) {
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children);
 
-    if (intersects.length > 0 && intersects[0].object !== selectedCube) {
-      hoverCube = intersects[0].object;
+      if (
+        intersects.length > 0 &&
+        intersects[0].object !== selectedCube &&
+        intersects[0].object.type === "Mesh" &&
+        !intersects[0].object.disabled
+      ) {
+        hoverCube = intersects[0].object;
 
-      // Swap positions
-      const tempPosition = selectedCube.position.clone();
-      selectedCube.position.copy(hoverCube.position);
-      hoverCube.position.copy(tempPosition);
+        // Swap positions
+        selectedCube.position.copy(hoverCube.position);
+        hoverCube.position.copy(lastCubePosition);
+      } else {
+        selectedCube.position.copy(lastCubePosition);
+      }
+    } else {
+      if (
+        previousMousePosition.x != event.clientX ||
+        previousMousePosition.y != event.clientY
+      )
+        return;
+      previousMousePosition = { x: event.clientX, y: event.clientY };
+      const hit = intersects[0];
+      if (hit && hit.object && typeof hit.object.onClick === "function") {
+        hit.object.onClick(hit);
+      }
     }
   }
 
@@ -234,21 +255,27 @@ window.addEventListener("mousemove", onMouseMove);
 window.addEventListener("mousedown", onMouseDown);
 window.addEventListener("mouseup", onMouseUp);
 
-const orientationCube = new Cube(["RIGHT", "LEFT", "TOP", "BOTTOM", "FRONT", "BACK"], 5, true);
+const orientationCube = new Cube(
+  ["RIGHT", "LEFT", "TOP", "BOTTOM", "FRONT", "BACK"],
+  5,
+  true
+);
 scene.add(orientationCube);
 // Update the mesh position in world space
 const worldPosition = new THREE.Vector3(0, 0, 0); // Set the fixed world position
 
-
 // Helper function to detect clicks on the cube faces
 function onMouseClick(event) {
-  
   // Convert mouse coordinates to normalized device coordinates (-1 to 1)
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  if(previousMousePosition.x == event.clientX || previousMousePosition.y == event.clientY) return;
+  if (
+    previousMousePosition.x == event.clientX ||
+    previousMousePosition.y == event.clientY
+  )
+    return;
   previousMousePosition = { x: event.clientX, y: event.clientY };
-  
+
   raycaster.setFromCamera(mouse, camera);
 
   // Raycast to detect intersection with cube
@@ -260,10 +287,10 @@ function onMouseClick(event) {
     // Rotate the scene based on the clicked face
     switch (face.normal.x) {
       case 1: // Right face clicked
-        scene.rotation.set(0, -Math.PI/2, 0);
+        scene.rotation.set(0, -Math.PI / 2, 0);
         break;
       case -1: // Left face clicked
-        scene.rotation.set(0, Math.PI/2, 0);
+        scene.rotation.set(0, Math.PI / 2, 0);
         break;
     }
     switch (face.normal.y) {
@@ -288,7 +315,7 @@ function onMouseClick(event) {
 }
 
 // Add the click event listener
-window.addEventListener('click', onMouseClick, false);
+window.addEventListener("click", onMouseClick, false);
 
 // Animation loop
 function animate(t) {
