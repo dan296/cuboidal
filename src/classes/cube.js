@@ -68,7 +68,7 @@ export default class Cube extends THREE.Mesh {
   onPointerOver(e) {
     if (!this.disabled) {
       this.material.forEach((mat) => {
-        mat.color.set("hotpink");
+        mat.color.set("#4794d7");
         mat.color.convertSRGBToLinear();
       });
     }

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import settings from "./settings";
 import Cube from "./classes/cube";
+import getWordsForCube from "./words";
 
 // state
 let width = 0;
@@ -51,10 +52,23 @@ function positionKey(x, y, z) {
 function addCube(x, y, z) {
   const key = positionKey(x, y, z);
   if (positions.has(key)) return; // Skip if the position already exists
+  letters = getLettersForCube(x, y, z);
   const cube = new Cube(letters);
   cube.position.set(x, y, z);
   scene.add(cube);
   positions.add(key); // Store the unique key in the Set
+}
+
+const words = getWordsForCube();
+
+function getLettersForCube(x, y, z) {
+  // check position of cube
+  // If cube is on vertex, return 3 letters -> should either be the end or beginning of 3 five letter words
+  // Otherwise return 4 letters -> should be the middle of 2 five letter words and a letter from 2 3 letter words
+  // check if at least 2 of the coordinates are -1 or 1
+  const isVertex = Math.abs(x) + Math.abs(y) + Math.abs(z) === 3;
+  
+
 }
 
 for (let x of offsets) {
@@ -190,7 +204,7 @@ function onMouseDown(event) {
     dragPlane.setFromNormalAndCoplanarPoint(planeNormal, selectedCube.position);
 
     const planeHelper = new THREE.PlaneHelper(dragPlane, 2, 0xff0000); // Visualize the plane (optional)
-    scene.add(planeHelper);
+    //scene.add(planeHelper);
     /*
     // Create a mesh to represent the drag plane (for intersection calculations)
     const dragPlaneGeometry = new THREE.PlaneGeometry(100, 100);
@@ -324,3 +338,5 @@ function animate(t) {
 }
 
 animate();
+
+console.log(getWordsForCube());
