@@ -28,7 +28,7 @@ header {
     background: #17171f;
     border-radius: 5px;
     color: white;
-    height: 90%;
+    height: calc(100% - 175px);
     width: 80%;
     padding: 10px 40px;
 }

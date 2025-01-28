@@ -45,8 +45,8 @@ pointLight.castShadow = false; // Ensure no shadows are cast
 scene.add(ambientLight);
 scene.add(pointLight);
 // Rotate the scene for an isometric view
-scene.rotation.x = Math.PI / 4; // 45 degrees
-scene.rotation.y =  -Math.PI / 4;//Math.atan(Math.sqrt(2)); // Approximately 35.264 degrees
+scene.rotation.x = Math.PI / 6; // 45 degrees
+scene.rotation.y =  -Math.PI / 3;//Math.atan(Math.sqrt(2)); // Approximately 35.264 degrees
 // Generate a wireframe of smaller cubes
 const edgeCubes = 5; // Number of cubes per edge
 const spacing = 0.5; // Spacing between the cubes
@@ -64,8 +64,6 @@ function addCube(x, y, z) {
   const key = positionKey(x, y, z);
   if (positions.has(key)) return; // Skip if the position already exists
   let letters = getLettersForCube(x, y, z);
-  
-  //letters = [`x:${x}`, `y:${y}`, `z:${z}`];
   letters = [
     letters["right"] ? letters["right"] : "",
     letters["left"] ? letters["left"] : "",

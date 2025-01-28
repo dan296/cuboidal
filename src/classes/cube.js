@@ -77,13 +77,11 @@ export default class Cube extends THREE.Mesh {
   }
 
   onResize(width, height, aspect) {
-    //this.cubeSize = width / 5; // 1/5 of the full width
-    //this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
   }
 
   onPointerOver(e) {
     console.log("Im over");
-    this.updateColor("#000111");
+    this.updateColor("#0a0a1b");// #000111
   }
 
   onPointerOut(e) {
@@ -101,10 +99,16 @@ export default class Cube extends THREE.Mesh {
   }
 
   onClick(e) {
+    this.rotate();
+  }
+
+  onDoubleClick(e) {
+    this.rotate();
+  }
+
+  rotate(axis, angle = Math.PI / 2) {
     if (!this.disabled) {
-      //this.cubeActive = !this.cubeActive;
-      //this.scale.setScalar(this.cubeSize * (this.cubeActive ? 1.5 : 1));
-      this.rotateOnAxis(new THREE.Vector3(0, 0, 1), Math.PI / 2);
+      this.rotateOnAxis(new THREE.Vector3(0, 0, 1), angle);
       this.textures.forEach((texture) => {
         this.rotateFace(texture);
       });
@@ -126,31 +130,49 @@ export default class Cube extends THREE.Mesh {
 
   checkPartial() {
     if (this.is_vertex) {
-      const xEqual = this.position.x === this.initialPosition.x;
-      const yEqual = this.position.y === this.initialPosition.y;
-      const zEqual = this.position.z === this.initialPosition.z;
-
-      return (xEqual && yEqual) || (xEqual && zEqual) || (yEqual && zEqual);
+      return this.checkVertexPartial();
     } else {
-      var coordToCheck = Math.abs(this.initialPosition.x) !== 1 ? "x" : Math.abs(this.initialPosition.y) !== 1 ? "y" : "z";
-      if (coordToCheck == "x") return this.position.x !== this.initialPosition.x && this.position.y == this.initialPosition.y && this.position.z == this.initialPosition.z;
-      if (coordToCheck == "y") return this.position.y !== this.initialPosition.y && this.position.x == this.initialPosition.x && this.position.z == this.initialPosition.z;
-      if (coordToCheck == "z") return this.position.z !== this.initialPosition.z && this.position.x == this.initialPosition.x && this.position.y == this.initialPosition.y;
+      return this.checkNonVertexPartial();
     }
+  }
+
+  checkVertexPartial() {
+    const xEqual = this.position.x === this.initialPosition.x;
+    const yEqual = this.position.y === this.initialPosition.y;
+    const zEqual = this.position.z === this.initialPosition.z;
+
+    return (xEqual && yEqual) || (xEqual && zEqual) || (yEqual && zEqual);
+  }
+
+  checkNonVertexPartial() {
+    const coordToCheck = this.getCoordToCheck();
+    if (coordToCheck == "x") return this.position.x !== this.initialPosition.x && this.position.y == this.initialPosition.y && this.position.z == this.initialPosition.z;
+    if (coordToCheck == "y") return this.position.y !== this.initialPosition.y && this.position.x == this.initialPosition.x && this.position.z == this.initialPosition.z;
+    if (coordToCheck == "z") return this.position.z !== this.initialPosition.z && this.position.x == this.initialPosition.x && this.position.y == this.initialPosition.y;
     return false;
+  }
+
+  getCoordToCheck() {
+    if (Math.abs(this.initialPosition.x) !== 1) {
+      return "x";
+    } else if (Math.abs(this.initialPosition.y) !== 1) {
+      return "y";
+    } else {
+      return "z";
+    }
   }
 
   // Check the cube's position
   checkPosition() {
     if (this.disabled) return;
-    var res = this.position.equals(this.initialPosition);
+    let res = this.position.equals(this.initialPosition);
 
     if (res) {
       this.color = "#021600";//"#008000"; // Green
     } else if (this.checkPartial()) {
       this.color = "#2d2d00"; // Yellow
     } else {
-      this.color = "#000000";
+      this.color = "#050505";
     }
     this.updateColor();
     return res;
