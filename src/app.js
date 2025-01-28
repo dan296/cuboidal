@@ -2,6 +2,17 @@ import * as THREE from "three";
 import settings from "./settings";
 import Cube from "./classes/cube";
 import getWordsForCube from "./words";
+import { DragControls } from "three/examples/jsm/Addons.js";
+
+// Add event listener to close the #instructions div
+document.querySelector(".close").addEventListener("click", () => {
+  document.getElementById("instructions").style.display = "none";
+});
+
+// Add event listener to close the #instructions div
+document.querySelector("#instructions-open").addEventListener("click", () => {
+  document.getElementById("instructions").style.display = "block";
+});
 
 // state
 let width = 0;
@@ -27,19 +38,18 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 document.getElementById("root").appendChild(renderer.domElement);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-const pointLight = new THREE.PointLight(0xffffff, 1.5);
+const ambientLight = new THREE.AmbientLight(0xffffff, 10);
+const pointLight = new THREE.PointLight(0xffffff, 10);
 pointLight.position.set(10, 10, 10);
+pointLight.castShadow = false; // Ensure no shadows are cast
 scene.add(ambientLight);
 scene.add(pointLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 10.0);
-directionalLight.position.set(5, 5, 5);
-scene.add(directionalLight);
-
+// Rotate the scene for an isometric view
+scene.rotation.x = Math.PI / 4; // 45 degrees
+scene.rotation.y =  -Math.PI / 4;//Math.atan(Math.sqrt(2)); // Approximately 35.264 degrees
 // Generate a wireframe of smaller cubes
 const edgeCubes = 5; // Number of cubes per edge
 const spacing = 0.5; // Spacing between the cubes
-const letters = ["A", "B", "C", "D"]; // Letters for each face
 
 // Calculate the positions for the wireframe
 const offsets = [-1, 1]; // To position cubes on opposite ends of the larger cube
@@ -49,12 +59,26 @@ const positions = new Set(); // Use Set to store unique positions
 function positionKey(x, y, z) {
   return `${x},${y},${z}`; // Create a string key like "1,-1,1"
 }
+
 function addCube(x, y, z) {
   const key = positionKey(x, y, z);
   if (positions.has(key)) return; // Skip if the position already exists
-  letters = getLettersForCube(x, y, z);
-  const cube = new Cube(letters);
-  cube.position.set(x, y, z);
+  let letters = getLettersForCube(x, y, z);
+  
+  //letters = [`x:${x}`, `y:${y}`, `z:${z}`];
+  letters = [
+    letters["right"] ? letters["right"] : "",
+    letters["left"] ? letters["left"] : "",
+    letters["top"] ? letters["top"] : "",
+    letters["bottom"] ? letters["bottom"] : "",
+    letters["front"] ? letters["front"] : "",
+    letters["back"] ? letters["back"] : ""
+  ];
+
+  letters = letters.map(l => l.toUpperCase());
+
+  // right, left, top, bottom, front, back
+  const cube = new Cube(x, y, z, letters);
   scene.add(cube);
   positions.add(key); // Store the unique key in the Set
 }
@@ -66,9 +90,26 @@ function getLettersForCube(x, y, z) {
   // If cube is on vertex, return 3 letters -> should either be the end or beginning of 3 five letter words
   // Otherwise return 4 letters -> should be the middle of 2 five letter words and a letter from 2 3 letter words
   // check if at least 2 of the coordinates are -1 or 1
-  const isVertex = Math.abs(x) + Math.abs(y) + Math.abs(z) === 3;
-  
+  const key = `${x},${y},${z}`;
+  return words[key];
 
+}
+let numberOfSwaps = 0;
+function shuffleCubes() {
+  let cubes = scene.children.filter(cube => cube instanceof Cube && !cube.disabled);
+  let vertexCubes = cubes.filter(cube => cube.is_vertex);
+  let edgeCubes = cubes.filter(cube => !cube.is_vertex);
+  for (let i = edgeCubes.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    edgeCubes[i].swap(edgeCubes[j]);
+    numberOfSwaps++;
+  }
+  for (let i = vertexCubes.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    vertexCubes[i].swap(vertexCubes[j]);
+    numberOfSwaps++;
+  }
+  console.log(`Number of swaps: ${numberOfSwaps}`);
 }
 
 for (let x of offsets) {
@@ -107,6 +148,8 @@ resize();
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 const toRadians = (angle) => angle * (Math.PI / 180);
+let selectedCube = null; // The cube currently being dragged
+let isCubeDragging = false; // Dragging state
 
 renderer.domElement.addEventListener("mouseleave", () => {
   isDragging = false;
@@ -116,63 +159,55 @@ renderer.domElement.addEventListener("mouseleave", () => {
 window.addEventListener("pointermove", (e) => {
   mouse.set((e.clientX / width) * 2 - 1, -(e.clientY / height) * 2 + 1);
   raycaster.setFromCamera(mouse, camera);
+  // Filter out null children
   intersects = raycaster.intersectObjects(scene.children, true);
-  const hit = intersects[0];
+  const hits = [intersects[0]];
+  if (isCubeDragging) {
+    // get first 2 hits
+    if (intersects.length > 1) {
+      if (hits.length === 2) hits.pop();
+      hits.push(intersects[1]);
+    }
+    const selectedCubeIndex = hits.findIndex(hit => hit != null && hit.object.uuid === selectedCube.uuid);
+    if (selectedCubeIndex === -1) {
+      hits.pop();
+      hits.push({ object: selectedCube });
+    }
+  }
+
+  // Get the keys of the hits array
+  let hitKeys = [];
+  if (hits.length > 0) hitKeys = hits.filter(hit => hit != null).map(hit => hit.object.uuid);
   // If a previously hovered item is not among the hits we must call onPointerOut
   Object.keys(hovered).forEach((key) => {
-    const thit = intersects.find((rhit) => rhit.object.uuid === key);
-    if (thit !== hit || hit === undefined) {
+    if (!hitKeys.includes(key)) {
       const hoveredItem = hovered[key];
-      if (hoveredItem.object.onPointerOver)
+      if (hoveredItem.object.onPointerOut) {
         hoveredItem.object.onPointerOut(hoveredItem);
+      }
       delete hovered[key];
     }
   });
 
-  if (hit && hit.object) {
-    // If a hit has not been flagged as hovered we must call onPointerOver
-    if (!hovered[hit.object.uuid]) {
-      hovered[hit.object.uuid] = hit;
-      if (hit.object.onPointerOver) hit.object.onPointerOver(hit);
+  if (Object.keys(hovered).length > 2) console.log(hitKeys);
+
+  for (let hit of hits) {
+    if (hit && hit.object) {
+      // If a hit has not been flagged as hovered we must call onPointerOver
+      if (!hovered[hit.object.uuid]) {
+        hovered[hit.object.uuid] = hit;
+        if (hit.object.onPointerOver) hit.object.onPointerOver(hit);
+      }
     }
-    // Call onPointerMove
-    if (hit.object.onPointerMove) hit.object.onPointerMove(hit);
   }
+
 });
 
-/*window.addEventListener("click", (e) => {
-  if(previousMousePosition.x != e.clientX || previousMousePosition.y != e.clientY) return;
-  previousMousePosition = { x: e.clientX, y: e.clientY };
-  const hit = intersects[0];
-  if (hit && hit.object && typeof hit.object.onClick === "function") {
-    hit.object.onClick(hit);
-  }
-});*/
-
-let selectedCube = null; // The cube currently being dragged
-let hoverCube = null; // The cube currently being hovered
-let isCubeDragging = false; // Dragging state
-let lastCubePosition = null; // Last position of the cube
-let dragPlane = new THREE.Plane(); // Drag plane
-let dragPlaneIntersectPoint = new THREE.Vector3(); // Point on the plane
 // Function to update the mouse position
 function onMouseMove(event) {
   mouse.set((event.clientX / width) * 2 - 1, -(event.clientY / height) * 2 + 1);
   if (selectedCube) {
     isCubeDragging = true;
-    // Update raycaster to project the mouse onto 3D space
-    raycaster.setFromCamera(mouse, camera);
-    const intersected = raycaster.ray.intersectPlane(
-      dragPlane,
-      dragPlaneIntersectPoint
-    ); // Update the cube's position
-    if (intersected) {
-      selectedCube.position.copy(dragPlaneIntersectPoint); // Move the cube to the intersection point
-    }
-    /*const intersects = raycaster.intersectObject(dragPlane); // Assuming you have a reference plane
-    if (intersects.length > 0) {
-      selectedCube.position.copy(mouse.position);
-    }*/
   } else if (isDragging) {
     const deltaMove = {
       x: event.clientX - previousMousePosition.x,
@@ -195,26 +230,11 @@ function onMouseDown(event) {
   const intersects = raycaster.intersectObjects(scene.children); // Detect cubes in the scene
   if (intersects.length > 0) {
     selectedCube = intersects[0].object;
-    if (selectedCube.disabled) return; // Skip if the cube is disabled
-    lastCubePosition = selectedCube.position.clone();
-
-    // Create a drag plane
-    const planeNormal = new THREE.Vector3(0, 0, 1); // Default plane normal
-    planeNormal.applyEuler(scene.rotation); // Apply scene's rotation to plane normal
-    dragPlane.setFromNormalAndCoplanarPoint(planeNormal, selectedCube.position);
-
-    const planeHelper = new THREE.PlaneHelper(dragPlane, 2, 0xff0000); // Visualize the plane (optional)
-    //scene.add(planeHelper);
-    /*
-    // Create a mesh to represent the drag plane (for intersection calculations)
-    const dragPlaneGeometry = new THREE.PlaneGeometry(100, 100);
-    const dragPlaneMaterial = new THREE.MeshBasicMaterial({ visible: false });
-    dragPlane = new THREE.Mesh(dragPlaneGeometry, dragPlaneMaterial);
-    dragPlane.lookAt(camera.position);
-    dragPlane.position.copy(selectedCube.position);
-    scene.add(dragPlane);
-    //scene.remove(planeHelper); // Remove the visual plane helper
- */
+    if (selectedCube.disabled){
+      selectedCube = null;
+      return; // Skip if the cube is disabled
+    }
+    selectedCube.lastStaticPosition = selectedCube.position.clone();
   } else {
     isDragging = true;
     isCubeDragging = false;
@@ -227,7 +247,7 @@ function onMouseUp(event) {
   if (selectedCube) {
     if (isCubeDragging) {
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(scene.children);
+      const intersects = raycaster.intersectObjects(scene.children).filter(intersect => intersect.object !== selectedCube);
 
       if (
         intersects.length > 0 &&
@@ -235,13 +255,11 @@ function onMouseUp(event) {
         intersects[0].object.type === "Mesh" &&
         !intersects[0].object.disabled
       ) {
-        hoverCube = intersects[0].object;
-
+        const hoverCube = intersects[0].object;
         // Swap positions
-        selectedCube.position.copy(hoverCube.position);
-        hoverCube.position.copy(lastCubePosition);
+        selectedCube.swap(hoverCube);
       } else {
-        selectedCube.position.copy(lastCubePosition);
+        selectedCube.resetPosition();
       }
     } else {
       if (
@@ -260,7 +278,6 @@ function onMouseUp(event) {
   // Reset state
   isCubeDragging = false;
   selectedCube = null;
-  hoverCube = null;
   isDragging = false;
 }
 
@@ -269,7 +286,7 @@ window.addEventListener("mousemove", onMouseMove);
 window.addEventListener("mousedown", onMouseDown);
 window.addEventListener("mouseup", onMouseUp);
 
-const orientationCube = new Cube(
+const orientationCube = new Cube(0, 0, 0,
   ["RIGHT", "LEFT", "TOP", "BOTTOM", "FRONT", "BACK"],
   5,
   true
@@ -339,4 +356,5 @@ function animate(t) {
 
 animate();
 
-console.log(getWordsForCube());
+//shuffleCubes();
+const dControls = new DragControls(scene.children, camera, renderer.domElement);

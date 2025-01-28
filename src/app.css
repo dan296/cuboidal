@@ -1,0 +1,82 @@
+@font-face {
+    font-family: 'Inter';
+    src: url('/src/assets/fonts/Inter/web/InterVariable.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Disable text selection for the entire page */
+body {
+    user-select: none;
+    background: linear-gradient(145deg, #1a1a2e, #262424);
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter';
+}
+
+header {
+    height: 45px;
+    position: fixed;
+    margin: auto;
+    left: 0;
+    right: 0;
+    text-align: center;
+    top: 20px;
+}
+
+#instructions {
+    background: #17171f;
+    border-radius: 5px;
+    color: white;
+    height: 90%;
+    width: 80%;
+    padding: 10px 40px;
+}
+
+#instructions-open{
+    color: white;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    border-radius: 50%;
+    border: 1px solid;
+    justify-content: center;
+    align-items: center;
+}
+
+.close{
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.bar{
+    width: 100%;
+    height: 1px;
+    background: white;
+
+}
+
+.rotate-45{
+    transform: rotate(45deg);
+}
+
+.rotate-45-neg{
+    transform: rotate(-45deg);
+}
+
+.perf-center{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+}

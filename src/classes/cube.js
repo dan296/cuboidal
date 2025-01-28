@@ -1,6 +1,7 @@
 import * as THREE from "three";
+const resolution = 256;
 export default class Cube extends THREE.Mesh {
-  constructor(letters = [], fontDivider = 2, disabled = false, color = "white") {
+  constructor(x, y, z, letters = [], fontDivider = 2, disabled = false, color = "black") {
     super();
     this.disabled = disabled;
     this.color = color;
@@ -12,25 +13,42 @@ export default class Cube extends THREE.Mesh {
       this.cubeSize,
       this.cubeSize
     );
+    this.fontDivider = fontDivider;
     // top, bottom, left, right, front, back
     // Create canvas-based textures for each face
+    this.setTextures();
+
+    this.cubeActive = false;
+    this.initialPosition = new THREE.Vector3(x, y, z);
+    this.is_vertex = this.isVertex();
+    this.lastStaticPosition = new THREE.Vector3(x, y, z);
+    this.initialRotation = new THREE.Euler(0, 0, 0);
+    this.position.set(x, y, z);
+    this.checkPosition();
+  }
+
+  setTextures(color = this.color) {
     this.textures = [];
     for (let i = 0; i < 6; i++) {
       const canvas = document.createElement("canvas");
       // Increase resolution for higher quality
-      const resolution = 256; // Higher resolution for sharper text
       canvas.width = resolution;
       canvas.height = resolution;
       const ctx = canvas.getContext("2d");
 
       // Fill background
-      ctx.fillStyle = this.color;
+      ctx.fillStyle = color;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw border
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
       // Draw letter if it exists for the face (letters[0-3] map to faces 0-3)
       if (i < this.letters.length) {
-        ctx.fillStyle = "black";
-        ctx.font = `${resolution / fontDivider}px Arial`;
+        ctx.fillStyle = "white";
+        ctx.font = `bold ${resolution / this.fontDivider}px 'Arial'`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(this.letters[i], canvas.width / 2, canvas.height / 2);
@@ -49,11 +67,9 @@ export default class Cube extends THREE.Mesh {
       (texture) =>
         new THREE.MeshStandardMaterial({
           map: texture,
-          color: new THREE.Color(this.color).convertSRGBToLinear(),
+          //color: new THREE.Color(this.color).convertSRGBToLinear(),
         })
     );
-
-    this.cubeActive = false;
   }
 
   render() {
@@ -66,21 +82,22 @@ export default class Cube extends THREE.Mesh {
   }
 
   onPointerOver(e) {
-    if (!this.disabled) {
-      this.material.forEach((mat) => {
-        mat.color.set("#4794d7");
-        mat.color.convertSRGBToLinear();
-      });
-    }
+    console.log("Im over");
+    this.updateColor("#000111");
   }
 
   onPointerOut(e) {
+    this.resetColor();
+  }
+
+  updateColor(color = this.color) {
     if (!this.disabled) {
-      this.material.forEach((mat) => {
-        mat.color.set(this.color);
-        mat.color.convertSRGBToLinear();
-      });
+      this.setTextures(color);
     }
+  }
+
+  resetColor() {
+    this.updateColor();
   }
 
   onClick(e) {
@@ -102,4 +119,62 @@ export default class Cube extends THREE.Mesh {
     // Trigger texture update
     texture.needsUpdate = true;
   }
+
+  isVertex() {
+    return Math.abs(this.initialPosition.x) == 1 && Math.abs(this.initialPosition.y) == 1 && Math.abs(this.initialPosition.z) == 1;
+  }
+
+  checkPartial() {
+    if (this.is_vertex) {
+      const xEqual = this.position.x === this.initialPosition.x;
+      const yEqual = this.position.y === this.initialPosition.y;
+      const zEqual = this.position.z === this.initialPosition.z;
+
+      return (xEqual && yEqual) || (xEqual && zEqual) || (yEqual && zEqual);
+    } else {
+      var coordToCheck = Math.abs(this.initialPosition.x) !== 1 ? "x" : Math.abs(this.initialPosition.y) !== 1 ? "y" : "z";
+      if (coordToCheck == "x") return this.position.x !== this.initialPosition.x && this.position.y == this.initialPosition.y && this.position.z == this.initialPosition.z;
+      if (coordToCheck == "y") return this.position.y !== this.initialPosition.y && this.position.x == this.initialPosition.x && this.position.z == this.initialPosition.z;
+      if (coordToCheck == "z") return this.position.z !== this.initialPosition.z && this.position.x == this.initialPosition.x && this.position.y == this.initialPosition.y;
+    }
+    return false;
+  }
+
+  // Check the cube's position
+  checkPosition() {
+    if (this.disabled) return;
+    var res = this.position.equals(this.initialPosition);
+
+    if (res) {
+      this.color = "#021600";//"#008000"; // Green
+    } else if (this.checkPartial()) {
+      this.color = "#2d2d00"; // Yellow
+    } else {
+      this.color = "#000000";
+    }
+    this.updateColor();
+    return res;
+  }
+
+  // Swapping cubes
+  swap(cube) {
+    if ((this.disabled || cube.disabled) || ((this.is_vertex && !cube.is_vertex) || (!this.is_vertex && cube.is_vertex))) {
+      this.resetPosition();
+      return;
+    }
+    // || ((this.is_vertex && !cube.is_vertex) || (!this.is_vertex && cube.is_vertex))
+    const tempPos = cube.position.clone();
+    cube.position.copy(this.lastStaticPosition);
+    cube.lastStaticPosition.copy(this.lastStaticPosition);
+    this.position.copy(tempPos);
+    this.lastStaticPosition.copy(tempPos);
+    this.checkPosition();
+    cube.checkPosition();
+  }
+
+  resetPosition() {
+    this.position.copy(this.lastStaticPosition);
+    this.checkPosition();
+  }
+
 }

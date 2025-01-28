@@ -1029,95 +1029,138 @@ const threeLetterWords = [
     "cod", "sod", "god", "fog", "hog", "jog", "log", "bog", "cog", "tog",
     "tag", "wag", "bag", "rag", "lag", "nag", "hag", "big", "dig", "pig",
     "wig", "fig"
-  ];
+];
+
+function getRandomWords(array, numWords, wordException = '') {
+    // Filter out the wordException
+    const filteredArray = array.filter(word => word !== wordException);
+    // Fisher-Yates shuffle algorithm
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array.slice(0, numWords);
+}
+
+const cubeThreeLetterWords = [...getRandomWords(threeLetterWords, 24)];
+
+console.log(cubeThreeLetterWords);
 
 function createCubeMap(wordMap) {
     const cubeMap = {};
 
-    function addLetterToCubeMap(x, y, z, letter) {
+    function addLetterToCubeMap(x, y, z, letter, cbMap, plane) {
         const key = `${x},${y},${z}`;
-        if (!cubeMap[key]) {
-            cubeMap[key] = [];
+        if (!cbMap[key]) {
+            cbMap[key] = {};
         }
-        cubeMap[key].push(letter);
+
+        cbMap[key][plane] = letter;
+    }
+    function processPlane(plane, xModifier, yModifier, zModifier) {
+        let tmpCubeMap = {};
+        const words = wordMap[plane];
+        // For 3 letter words 
+        const opp = opposites[plane] || Object.keys(opposites).find(key => opposites[key] === plane);
+        
+        let xInit = xModifier.initial;
+        let yInit = yModifier.initial;
+        let flipper = 1;
+        words.forEach((word, wordIndex) => {
+            const three_letter_word = getThreeLetterWord();
+            if (wordIndex === 2) {
+                xModifier.initial = -1 * xModifier.initial;
+                flipper = -1;
+            } else {
+                xModifier.initial = xInit;
+                flipper = 1;
+            }
+            if (wordIndex === 3) {
+                yModifier.initial = -1 * yModifier.initial;
+                flipper = -1;
+            } else {
+                yModifier.initial = yInit;
+                flipper = 1;
+            }
+            xModifier.curr = xModifier.initial;
+            yModifier.curr = yModifier.initial;
+            for (let i = 0; i < word.length; i++) {
+                if (wordIndex == 0 || wordIndex == 3) {
+                    xModifier.curr = xModifier.initial + i * xModifier.increment;
+                } else {
+                    yModifier.curr = yModifier.initial + i * yModifier.increment;
+                }
+                // Determine which modifier has the coord "x"
+                const coordMap = {
+                    [xModifier.coord]: xModifier.curr,
+                    [yModifier.coord]: yModifier.curr,
+                    [zModifier.coord]: zModifier.curr
+                };
+
+                let key2 = `${coordMap.x},${coordMap.y},${coordMap.z}`;
+
+                if (tmpCubeMap[key2]) {
+                    if (tmpCubeMap[key2][plane] !== word[i]) throw new Error("letters don't match");
+                    continue;
+                }
+
+                addLetterToCubeMap(coordMap.x, coordMap.y, coordMap.z, word[i], tmpCubeMap, plane);
+                addLetterToCubeMap(coordMap.x, coordMap.y, coordMap.z, word[i], cubeMap, plane);
+                
+                if(i > 0 && i < word.length - 1){
+                    addLetterToCubeMap(coordMap.x, coordMap.y, coordMap.z, three_letter_word[three_letter_word.length - (i)], cubeMap, opp);
+                }
+
+            }
+        });
+        tmpCubeMap = {};
+    }
+
+    class CoordModifier {
+        constructor(initial, increment, coord) {
+            this.initial = initial;
+            this.increment = increment;
+            this.coord = coord; //"x", "y", "z"
+            this.curr = initial;
+        }
     }
 
     // Process the "top" plane (0, 0, 1)
-    const topWords = wordMap.top;
-    topWords.forEach((word, wordIndex) => {
-        const z = 1;
-        let y = 1;
-        let x = -1;
-        if (wordIndex === 2) x = 1;
-        if (wordIndex === 3) y = -1;
+    let xMod = new CoordModifier(-1, 0.5, "x");
+    let yMod = new CoordModifier(-1, 0.5, "z");
+    let zMod = new CoordModifier(1, 0, "y");
+    processPlane('top', xMod, yMod, zMod);
 
-        for (let i = 0; i < word.length; i++) {
-            if (wordIndex == 0 || wordIndex == 3){
-                x = -1 + i * 0.5;
-            }else{
-                y = 1 - i * 0.5;
-            }
-            
-            addLetterToCubeMap(x, y, z, word[i]);
-        }
-    });
-    console.log(cubeMap);
-/*
     // Process the "bottom" plane (0, 0, -1)
-    const bottomWords = wordMap.bottom;
-    bottomWords.forEach((word, wordIndex) => {
-        const z = -1;
-        const y = 1 - wordIndex * 0.5;
-        for (let i = 0; i < word.length; i++) {
-            const x = -1 + i * 0.5;
-            addLetterToCubeMap(x, y, z, word[i]);
-        }
-    });
+    xMod = new CoordModifier(-1, 0.5, "x");
+    yMod = new CoordModifier(1, -0.5, "z");
+    zMod = new CoordModifier(-1, 0, "y");
+    processPlane('bottom', xMod, yMod, zMod);
 
     // Process the "left" plane (-1, 0, 0)
-    const leftWords = wordMap.left;
-    leftWords.forEach((word, wordIndex) => {
-        const x = -1;
-        const y = 1 - wordIndex * 0.5;
-        for (let i = 0; i < word.length; i++) {
-            const z = 1 - i * 0.5;
-            addLetterToCubeMap(x, y, z, word[i]);
-        }
-    });
+    xMod = new CoordModifier(-1, 0.5, "z");
+    yMod = new CoordModifier(1, -0.5, "y");
+    zMod = new CoordModifier(-1, 0, "x");
+    processPlane('left', xMod, yMod, zMod);
 
     // Process the "right" plane (1, 0, 0)
-    const rightWords = wordMap.right;
-    rightWords.forEach((word, wordIndex) => {
-        const x = 1;
-        const y = 1 - wordIndex * 0.5;
-        for (let i = 0; i < word.length; i++) {
-            const z = 1 - i * 0.5;
-            addLetterToCubeMap(x, y, z, word[i]);
-        }
-    });
+    xMod = new CoordModifier(1, -0.5, "z");
+    yMod = new CoordModifier(1, -0.5, "y");
+    zMod = new CoordModifier(1, 0, "x");
+    processPlane('right', xMod, yMod, zMod);
 
-    // Process the "front" plane (0, 1, 0)
-    const frontWords = wordMap.front;
-    frontWords.forEach((word, wordIndex) => {
-        const y = 1;
-        const x = -1 + wordIndex * 0.5;
-        for (let i = 0; i < word.length; i++) {
-            const z = 1 - i * 0.5;
-            addLetterToCubeMap(x, y, z, word[i]);
-        }
-    });
+    // Process the "front" plane (0, -1, 0)
+    xMod = new CoordModifier(-1, 0.5, "x");
+    yMod = new CoordModifier(1, -0.5, "y");
+    zMod = new CoordModifier(1, 0, "z");
+    processPlane('front', xMod, yMod, zMod);
 
-    // Process the "back" plane (0, -1, 0)
-    const backWords = wordMap.back;
-    backWords.forEach((word, wordIndex) => {
-        const y = -1;
-        const x = -1 + wordIndex * 0.5;
-        for (let i = 0; i < word.length; i++) {
-            const z = 1 - i * 0.5;
-            addLetterToCubeMap(x, y, z, word[i]);
-        }
-    });
-*/
+    //`Process the "back" plane (0, 1, 0)
+    xMod = new CoordModifier(1, -0.5, "x");
+    yMod = new CoordModifier(1, -0.5, "y");
+    zMod = new CoordModifier(-1, 0, "z");
+    processPlane('back', xMod, yMod, zMod);
+
     return cubeMap;
 }
 
@@ -1131,23 +1174,18 @@ const wordMap = {
     "back": ["ether", "earth", "ropes", "hopes"]
 };
 
+const opposites = {
+    "top": "bottom",
+    "left": "right",
+    "front": "back"
+}
+
 const cubeMap = createCubeMap(wordMap);
 console.log(cubeMap);
 console.log(Object.keys(cubeMap).length);
 
 // should be 61 total cubes
 
-
-function getRandomWords(array, numWords, wordException = '') {
-    // Filter out the wordException
-    const filteredArray = array.filter(word => word !== wordException);
-    // Fisher-Yates shuffle algorithm
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array.slice(0, numWords);
-}
 
 function findRandomWordStartingWith(words, letter, existingWords) {
     const matchingWords = words.filter(word => word[0].toLowerCase() === letter.toLowerCase());
@@ -1170,7 +1208,15 @@ function findRandomWordStartingWithAndEndingWith(words, startletter, endletter, 
     return matchingWords[randomIndex];
 }
 
-export default function getWordsForCube(){
+
+
+function getThreeLetterWord(){
+    const word = cubeThreeLetterWords[Math.floor(Math.random() * cubeThreeLetterWords.length)];
+    cubeThreeLetterWords.splice(cubeThreeLetterWords.indexOf(word), 1);
+    return word;
+} 
+
+export default function getWordsForCube() {
     // need to retrieve 24 3 letter words
     let wordsList = [];
     // each face has 4 5 letter words -> so 24 5 letter words BUT each face needs to start and stop with the same letter
@@ -1192,7 +1238,7 @@ export default function getWordsForCube(){
     //const circularLinkedWords = getCircularLinkedWords(fiveLetterWords, 4, 6);
     //console.log(circularLinkedWords);
     wordsList.push(...fiveLetterWords);
-    return wordsList;
+    return cubeMap;
 }
 
 // Word order on cubes is right, left, top, bottom, front, back

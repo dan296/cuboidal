@@ -12,6 +12,7 @@
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
     <link rel="shortcut icon" href="/src/assets/images/favicon.ico" />
+    <link rel="stylesheet" href="/src/app.css" />
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -24,21 +25,37 @@
     <title>Cuboidal App</title>
   </head>
 
-  <body style="background-color: #13131f">
+  <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
-    <header
-      style="
-        height: 45px;
-        position: fixed;
-        margin: auto;
-        left: 0;
-        right: 0;
-        text-align: center;
-      "
-    >
+    <header>
       <img src="./src/assets/images/title.png" style="height: 100%" />
     </header>
     <div id="root"></div>
+    <div id="instructions-open">i</div>
+    <div id="instructions" class="perf-center">
+      <div class="close">
+        <div class="bar rotate-45 perf-center"></div>
+        <div class="bar rotate-45-neg perf-center"></div>
+      </div>
+      <h1>How To Play</h1>
+
+      <h3>Solve the cube with the least amount of swaps and rotations!</h3>
+      <p>
+        Each edge of the cube makes up a five letter word.
+      </p>
+      <p>
+        Each face of the cube has 4 words that are connected by their first and last letters.
+      </p>
+      <p>
+        To <strong>rotate</strong> a cube, click the cube.
+      </p>
+      <p>
+        To <strong>swap</strong> 2 cubes, click and drag one cube onto another.
+      </p>
+      <p>
+        The limit for swaps and rotations is 60.
+      </p>
+    </div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
