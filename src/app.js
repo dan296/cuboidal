@@ -6,12 +6,33 @@ import { DragControls } from "three/examples/jsm/Addons.js";
 
 // Add event listener to close the #instructions div
 document.querySelector(".close").addEventListener("click", () => {
-  document.getElementById("instructions").style.display = "none";
+  const instructions = document.getElementById("instructions");
+  instructions.classList.remove("show");
+  instructions.classList.add("hide");
+  setTimeout(() => {
+    instructions.style.display = "none";
+  }, 500); // Match the duration of the CSS transition
 });
 
-// Add event listener to close the #instructions div
+// Add event listener to open the #instructions div
 document.querySelector("#instructions-open").addEventListener("click", () => {
-  document.getElementById("instructions").style.display = "block";
+  showInstructions();
+});
+function showInstructions(delay = 10){
+  const instructions = document.getElementById("instructions");
+  instructions.style.display = "block";
+  setTimeout(() => {
+    instructions.classList.remove("hide");
+    instructions.classList.add("show");
+  }, delay); // Small delay to ensure the display change is applied
+}
+
+window.addEventListener("load", function() {
+  // Show the content by removing the hidden class from the body
+  document.body.classList.remove("hidden");
+
+  // Show the instructions after the page is fully loaded
+  showInstructions(1000);
 });
 
 // state
@@ -354,5 +375,11 @@ function animate(t) {
 
 animate();
 
-//shuffleCubes();
+shuffleCubes();
 const dControls = new DragControls(scene.children, camera, renderer.domElement);
+
+/*
+TODO: Add timer when close instructions is clicked first time
+TODO: Lock in correct cubes (disable them)
+TODO: Add a rotations and swaps counter
+*/

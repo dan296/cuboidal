@@ -25,7 +25,7 @@
     <title>Cuboidal App</title>
   </head>
 
-  <body>
+  <body class="hidden">
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <header>
       <img src="./src/assets/images/title.png" style="height: 100%" />
@@ -37,24 +37,44 @@
         <div class="bar rotate-45 perf-center"></div>
         <div class="bar rotate-45-neg perf-center"></div>
       </div>
-      <h1>How To Play</h1>
+      <h2>How To Play</h1>
 
-      <h3>Solve the cube with the least amount of swaps and rotations!</h3>
-      <p>
-        Each edge of the cube makes up a five letter word.
-      </p>
-      <p>
-        Each face of the cube has 4 words that are connected by their first and last letters.
-      </p>
-      <p>
-        To <strong>rotate</strong> a cube, click the cube.
-      </p>
-      <p>
-        To <strong>swap</strong> 2 cubes, click and drag one cube onto another.
-      </p>
-      <p>
-        The limit for swaps and rotations is 60.
-      </p>
+      <h4>Solve the cube with the least amount of swaps and rotations!</h3>
+      <div style="display: flex; justify-content: space-evenly">
+        <div style="text-align: center; flex-direction: column">
+          <img src="./src/assets/images/incorrect.png" style="height: 70px" />
+          <p>Incorrect Position</p>
+        </div>
+        <div style="text-align: center">
+          <img src="./src/assets/images/partial.png" style="height: 70px" />
+          <p>Partially Correct Position</p>
+        </div>
+        <div style="text-align: center">
+          <img src="./src/assets/images/correct.png" style="height: 70px" />
+          <p>Correct Position</p>
+        </div>
+      </div>
+      <ul>
+        <li>Each edge of the cube makes up a five letter word.</li>
+        <li>Each face of the cube has 4 words that are connected by their first and
+          last letters.</li>
+        <li>A cube is <strong>partially correct</strong> if it is on the correct edge or if it's in the correct spot with the incorrect rotation.</li>
+        <li>The limit for swaps and rotations is 60.</li>
+      </ul>
+      <div style="display: flex; justify-content: space-evenly">
+        <div style="text-align: center; flex-direction: column">
+          <img src="./src/assets/images/rotate.png" style="height: 70px" />
+          <p style="width: 200px">
+            To <strong>rotate</strong> a cube, click the cube.
+          </p>
+        </div>
+        <div style="text-align: center">
+          <img src="./src/assets/images/swap.png" style="height: 70px" />
+          <p style="width: 200px">
+            To <strong>swap</strong> 2 cubes, click and drag one cube onto another.
+          </p>
+        </div>
+      </div>
     </div>
     <!--
       This HTML file is a template.

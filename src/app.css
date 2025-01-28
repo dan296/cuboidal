@@ -1,17 +1,27 @@
 @font-face {
     font-family: 'Inter';
-    src: url('/src/assets/fonts/Inter/web/InterVariable.woff2') format('woff2');
-    font-weight: normal;
+    src: url('/src/assets/fonts/Inter/web/Inter-ExtraLight.woff2') format('woff2');
+    font-weight: lighter;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('/src/assets/fonts/Inter/web/Inter-ExtraBold.woff2') format('woff2');
+    font-weight: bold;
     font-style: normal;
 }
 
 /* Disable text selection for the entire page */
+.hidden {
+    display: none;
+  }
 body {
     user-select: none;
     background: linear-gradient(145deg, #1a1a2e, #262424);
     margin: 0;
     padding: 0;
-    font-family: 'Inter';
+    font-family: 'Inter', sans-serif;
 }
 
 header {
@@ -29,9 +39,26 @@ header {
     border-radius: 5px;
     color: white;
     height: calc(100% - 175px);
-    width: 80%;
+    max-width: 400px;
     padding: 10px 40px;
+    min-width: 365px;
+    overflow: scroll;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    display: none; /* Initially hidden */
 }
+
+#instructions.show {
+    opacity: 1;
+    transform: translateY(0);
+    display: block; /* Show when the class is added */
+  }
+  
+  #instructions.hide {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 
 #instructions-open{
     color: white;
@@ -79,4 +106,12 @@ header {
     right: 0;
     left: 0;
     margin: auto;
+}
+
+#instructions p, #instructions li{
+    font-size: 10pt;
+}
+
+#instructions ul{
+    padding: 0;
 }
