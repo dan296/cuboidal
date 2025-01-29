@@ -34,7 +34,7 @@ header {
     top: 20px;
 }
 
-#instructions {
+.modal {
     background: #17171f;
     border-radius: 5px;
     color: white;
@@ -42,29 +42,35 @@ header {
     max-width: 400px;
     padding: 10px 40px;
     min-width: 365px;
-    overflow: scroll;
     transition: opacity 0.5s ease, transform 0.5s ease;
     opacity: 0;
     transform: translateY(20px);
     display: none; /* Initially hidden */
+    flex-direction: column;
 }
 
-#instructions.show {
+.modal.show {
     opacity: 1;
     transform: translateY(0);
-    display: block; /* Show when the class is added */
   }
   
-  #instructions.hide {
+  .modal.hide {
     opacity: 0;
     transform: translateY(20px);
   }
+  .modal h2{
+    text-align: center;
+  }
+  .modal .scroll-container{
+    flex: 1;
+    overflow: scroll;
+  }
 
-#instructions-open{
+.open{
     color: white;
     position: absolute;
     top: 20px;
-    right: 20px;
+    left: 20px;
     width: 30px;
     height: 30px;
     cursor: pointer;
@@ -73,6 +79,10 @@ header {
     border: 1px solid;
     justify-content: center;
     align-items: center;
+}
+#instructions-open{
+    right: 20px;
+    left: auto;
 }
 
 .close{

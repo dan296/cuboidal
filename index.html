@@ -31,14 +31,17 @@
       <img src="./src/assets/images/title.png" style="height: 100%" />
     </header>
     <div id="root"></div>
-    <div id="instructions-open">i</div>
-    <div id="instructions" class="perf-center">
+    <div class="open" data-modal="leaderboard">
+      <img src="./src/assets/images/leaderboard.png" style="height: 60%" />
+    </div>
+    <div id="instructions-open" class="open" data-modal="instructions">i</div>
+    <div id="instructions" class="modal perf-center">
       <div class="close">
         <div class="bar rotate-45 perf-center"></div>
         <div class="bar rotate-45-neg perf-center"></div>
       </div>
       <h2>How To Play</h1>
-
+      <div class="scroll-container">
       <h4>Solve the cube with the least amount of swaps and rotations!</h3>
       <div style="display: flex; justify-content: space-evenly">
         <div style="text-align: center; flex-direction: column">
@@ -76,6 +79,16 @@
         </div>
       </div>
     </div>
+    </div>
+    <div id="leaderboard" class="modal perf-center">
+      <div class="close">
+        <div class="bar rotate-45 perf-center"></div>
+        <div class="bar rotate-45-neg perf-center"></div>
+      </div>
+      <h2>Leaderboard</h1>
+      <div class="scroll-container">
+      </div>
+    </div>  
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.

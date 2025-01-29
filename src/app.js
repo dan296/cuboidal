@@ -4,27 +4,39 @@ import Cube from "./classes/cube";
 import getWordsForCube from "./words";
 import { DragControls } from "three/examples/jsm/Addons.js";
 
-// Add event listener to close the #instructions div
-document.querySelector(".close").addEventListener("click", () => {
-  const instructions = document.getElementById("instructions");
-  instructions.classList.remove("show");
-  instructions.classList.add("hide");
-  setTimeout(() => {
-    instructions.style.display = "none";
-  }, 500); // Match the duration of the CSS transition
+// Add event listener to close the modal based on the parent element's ID
+document.querySelectorAll(".close").forEach(element => {
+  element.addEventListener("click", () => {
+    const parentElement = element.parentElement;
+    const modalId = parentElement.id;
+    hideModal(modalId);
+  });
 });
 
-// Add event listener to open the #instructions div
-document.querySelector("#instructions-open").addEventListener("click", () => {
-  showInstructions();
+// Add event listener to open the modal based on the data-modal attribute
+document.querySelectorAll(".open").forEach(element => {
+  element.addEventListener("click", () => {
+    const modalId = element.getAttribute("data-modal");
+    showModal(modalId);
+  });
 });
-function showInstructions(delay = 10){
-  const instructions = document.getElementById("instructions");
-  instructions.style.display = "block";
+
+function showModal(id, delay = 10){
+  const div = document.getElementById(id);
+  div.style.display = "flex";
   setTimeout(() => {
-    instructions.classList.remove("hide");
-    instructions.classList.add("show");
+    div.classList.remove("hide");
+    div.classList.add("show");
   }, delay); // Small delay to ensure the display change is applied
+}
+
+function hideModal(id){
+  const div = document.getElementById(id);
+  div.classList.remove("show");
+  div.classList.add("hide");
+  setTimeout(() => {
+    div.style.display = "none";
+  }, 500); // Match the duration of the CSS transition
 }
 
 window.addEventListener("load", function() {
@@ -32,7 +44,7 @@ window.addEventListener("load", function() {
   document.body.classList.remove("hidden");
 
   // Show the instructions after the page is fully loaded
-  showInstructions(1000);
+  showModal("instructions", 1000);
 });
 
 // state
