@@ -22,6 +22,16 @@ document.querySelectorAll(".open").forEach(element => {
 });
 
 function showModal(id, delay = 10){
+  // Hide all other modals except the one with the matching ID
+  document.querySelectorAll('.modal').forEach(modal => {
+    if (modal.id !== id) {
+      modal.classList.remove('show');
+      modal.classList.add('hide');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 500); // Match the duration of the CSS transition
+    }
+  });
   const div = document.getElementById(id);
   div.style.display = "flex";
   setTimeout(() => {
