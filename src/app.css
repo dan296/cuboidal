@@ -15,7 +15,8 @@
 /* Disable text selection for the entire page */
 .hidden {
     display: none;
-  }
+}
+
 body {
     user-select: none;
     background: linear-gradient(145deg, #1a1a2e, #262424);
@@ -45,28 +46,46 @@ header {
     transition: opacity 0.5s ease, transform 0.5s ease;
     opacity: 0;
     transform: translateY(20px);
-    display: none; /* Initially hidden */
+    display: none;
+    /* Initially hidden */
     flex-direction: column;
 }
 
 .modal.show {
     opacity: 1;
     transform: translateY(0);
-  }
-  
-  .modal.hide {
+}
+
+.modal.hide {
     opacity: 0;
     transform: translateY(20px);
-  }
-  .modal h2{
+}
+
+.modal h2 {
     text-align: center;
-  }
-  .modal .scroll-container{
+}
+
+.modal .scroll-container {
     flex: 1;
     overflow: scroll;
-  }
+}
 
-.open{
+.scroll-container {
+    overflow: -moz-scrollbars-none;
+    /* For Firefox */
+    -ms-overflow-style: none;
+    /* For Internet Explorer and Edge */
+    scrollbar-width: none;
+    /* For Firefox */
+}
+
+.scroll-container::-webkit-scrollbar {
+    display: none;
+    /* For Chrome, Safari, and Opera */
+}
+
+
+.open {
     color: white;
     position: absolute;
     top: 20px;
@@ -80,12 +99,13 @@ header {
     justify-content: center;
     align-items: center;
 }
-#instructions-open{
+
+#instructions-open {
     right: 20px;
     left: auto;
 }
 
-.close{
+.close {
     position: absolute;
     top: 20px;
     right: 20px;
@@ -94,22 +114,22 @@ header {
     cursor: pointer;
 }
 
-.bar{
+.bar {
     width: 100%;
     height: 1px;
     background: white;
 
 }
 
-.rotate-45{
+.rotate-45 {
     transform: rotate(45deg);
 }
 
-.rotate-45-neg{
+.rotate-45-neg {
     transform: rotate(-45deg);
 }
 
-.perf-center{
+.perf-center {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -118,10 +138,54 @@ header {
     margin: auto;
 }
 
-#instructions p, #instructions li{
+#instructions p,
+#instructions li {
     font-size: 10pt;
 }
 
-#instructions ul{
+#instructions ul {
     padding: 0;
+}
+
+.search{
+    display: flex;
+    gap: 10px;
+}
+
+#search{
+    flex: 1;
+    font-family: inherit;
+    background: #232330;
+    outline: none;
+    border: 1px solid;
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+#refresh{
+    transform: rotate(45deg);
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.row-header{
+    font-weight: bold;
+}
+
+.row{
+    display: flex;
+    padding: 10px 0px;
+}
+.col{
+    flex: 1;
+    text-align: center;
+}
+.scroll-container .row:nth-child(odd){
+    background: #111117;
 }

@@ -28,11 +28,11 @@
   <body class="hidden">
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <header>
-      <img src="./src/assets/images/title.png" style="height: 100%" />
+      <img src="./src/assets/images/title.png" style="height: 100%" alt="Title" />
     </header>
     <div id="root"></div>
     <div class="open" data-modal="leaderboard">
-      <img src="./src/assets/images/leaderboard.png" style="height: 60%" />
+      <img src="./src/assets/images/leaderboard.png" style="height: 60%" alt="Leaderboard" />
     </div>
     <div id="instructions-open" class="open" data-modal="instructions">i</div>
     <div id="instructions" class="modal perf-center">
@@ -45,15 +45,15 @@
       <h4>Solve the cube with the least amount of swaps and rotations!</h3>
       <div style="display: flex; justify-content: space-evenly">
         <div style="text-align: center; flex-direction: column">
-          <img src="./src/assets/images/incorrect.png" style="height: 70px" />
+          <img src="./src/assets/images/incorrect.png" style="height: 70px" alt="Incorrect Position" />
           <p>Incorrect Position</p>
         </div>
         <div style="text-align: center">
-          <img src="./src/assets/images/partial.png" style="height: 70px" />
+          <img src="./src/assets/images/partial.png" style="height: 70px" alt="Partially Correct Position" />
           <p>Partially Correct Position</p>
         </div>
         <div style="text-align: center">
-          <img src="./src/assets/images/correct.png" style="height: 70px" />
+          <img src="./src/assets/images/correct.png" style="height: 70px" alt="Correct Position" />
           <p>Correct Position</p>
         </div>
       </div>
@@ -66,13 +66,13 @@
       </ul>
       <div style="display: flex; justify-content: space-evenly">
         <div style="text-align: center; flex-direction: column">
-          <img src="./src/assets/images/rotate.png" style="height: 70px" />
+          <img src="./src/assets/images/rotate.png" style="height: 70px" alt="Rotate Cube" />
           <p style="width: 200px">
             To <strong>rotate</strong> a cube, click the cube.
           </p>
         </div>
         <div style="text-align: center">
-          <img src="./src/assets/images/swap.png" style="height: 70px" />
+          <img src="./src/assets/images/swap.png" style="height: 70px" alt="Swap Cubes" />
           <p style="width: 200px">
             To <strong>swap</strong> 2 cubes, click and drag one cube onto another.
           </p>
@@ -86,19 +86,67 @@
         <div class="bar rotate-45-neg perf-center"></div>
       </div>
       <h2>Leaderboard</h1>
+      <div class="search">
+        <input type="text" id="search" placeholder="Search for a player..." />
+        <div id="refresh">&#x21bb;</div>
+      </div>
+      <div class="row row-header">
+        <div class="col">Rank</div>
+        <div class="col">Player</div>
+        <div class="col">Moves</div>
+        <div class="col">Time</div>
+      </div>
       <div class="scroll-container">
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
+        <div class="row">
+          <div class="col">#1</div>
+          <div class="col">Dan</div>
+          <div class="col">40</div>
+          <div class="col">2:08</div>
+        </div>
       </div>
     </div>  
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
     <script type="module" src="./src/app.js"></script>
   </body>
 </html>
