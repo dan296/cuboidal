@@ -23,6 +23,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Inter', sans-serif;
+    color: white;
 }
 
 header {
@@ -38,7 +39,6 @@ header {
 .modal {
     background: #17171f;
     border-radius: 5px;
-    color: white;
     height: calc(100% - 175px);
     max-width: 400px;
     padding: 10px 40px;
@@ -86,7 +86,6 @@ header {
 
 
 .open {
-    color: white;
     position: absolute;
     top: 20px;
     left: 20px;
@@ -188,4 +187,36 @@ header {
 }
 .scroll-container .row:nth-child(odd){
     background: #111117;
+}
+
+#tracker-container{
+    position: fixed;
+    top: 80px;
+    display: flex;
+    width: 100%;
+}
+
+.tracker {
+    flex: 1;
+    text-align: center;
+}
+
+.tracker-label {
+    font-size: 8pt;
+    margin-bottom: 10px;
+}
+
+.tracker-value {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    align-items: center;
+}
+
+.num-card {
+    background: black;
+    border-radius: 4px;
+    padding: 10px;
+    font-weight: bold;
+    font-family: monospace;
 }
