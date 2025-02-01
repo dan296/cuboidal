@@ -140,17 +140,21 @@ function shuffleCubes() {
   let cubes = scene.children.filter(cube => cube instanceof Cube && !cube.disabled);
   let vertexCubes = cubes.filter(cube => cube.is_vertex);
   let edgeCubes = cubes.filter(cube => !cube.is_vertex);
-  for (let i = edgeCubes.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    edgeCubes[i].swap(edgeCubes[j]);
-    numberOfSwaps++;
-  }
-  for (let i = vertexCubes.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    vertexCubes[i].swap(vertexCubes[j]);
-    numberOfSwaps++;
+  swapCubes(vertexCubes, numberOfSwaps);
+  swapCubes(edgeCubes, numberOfSwaps);
+  for (const cube of cubes) {
+    cube.resetPosition();
   }
   console.log(`Number of swaps: ${numberOfSwaps}`);
+}
+
+function swapCubes(cubeArray, numSwaps){
+  for (let i = cubeArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    cubeArray[i].swap(cubeArray[j]);
+    numSwaps++;
+  }
+
 }
 
 for (let x of offsets) {
@@ -262,7 +266,7 @@ function onMouseMove(event) {
     previousMousePosition = { x: event.clientX, y: event.clientY };
   }
   // Move the mesh to the world position
-  orientationCube.position.copy(worldPosition);
+  freezeCubes();
 }
 
 // Function to handle mouse down (start dragging)
@@ -330,7 +334,8 @@ window.addEventListener("mouseup", onMouseUp);
 const orientationCube = new Cube(0, 0, 0,
   ["RIGHT", "LEFT", "TOP", "BOTTOM", "FRONT", "BACK"],
   5,
-  true
+  true,
+  "black"
 );
 scene.add(orientationCube);
 // Update the mesh position in world space
@@ -383,7 +388,15 @@ function onMouseClick(event) {
     }
   }
   // Move the mesh to the world position
-  orientationCube.position.copy(worldPosition);
+  freezeCubes();
+}
+
+function freezeCubes() {
+  scene.children.forEach(child => {
+    if (child instanceof Cube && child.disabled) {
+      child.position.copy(child.lastStaticPosition);
+    }
+  });
 }
 
 // Add the click event listener

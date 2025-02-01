@@ -190,13 +190,13 @@ export default class Cube extends THREE.Mesh {
     cube.lastStaticPosition.copy(this.lastStaticPosition);
     this.position.copy(tempPos);
     this.lastStaticPosition.copy(tempPos);
-    this.checkPosition();
-    cube.checkPosition();
+    this.disabled = this.checkPosition();
+    cube.disabled = cube.checkPosition();
   }
 
   resetPosition() {
     this.position.copy(this.lastStaticPosition);
-    this.checkPosition();
+    this.disabled = this.checkPosition();
   }
 
 }
