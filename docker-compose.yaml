@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  cuboidal.ui:
+    build:
+      context: .
+      dockerfile: ./docker/cuboidal.ui.Dockerfile
+    ports:
+      - "3000:80"  # Serve with Nginx or another static server
+    depends_on:
+      - cuboidal.api
+
+  cuboidal.api:
+    build:
+      context: .
+      dockerfile: ./docker/cuboidal.api.Dockerfile
+    ports:
+      - "4000:4000"  # API runs on port 4000
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
