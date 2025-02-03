@@ -5,11 +5,11 @@ const router = Router();
 const redis = new Redis();
 
 // Add a player to the leaderboard
-router.post("/add", async (req, res) => {
-  const { player, score } = req.body;
-  if (!player || score == null) return res.status(400).json({ error: "Invalid data" });
+router.post("/add", async (req, res)=> {
+  const { player, moves, time } = req.body;
+  if (!player || moves == null || time == null) res.status(400).json({ error: "Invalid data" });
 
-  await redis.zadd("leaderboard", score, player);
+  await redis.zadd("leaderboard", moves, time, player);
   res.json({ message: "Score added!" });
 });
 
