@@ -1,25 +1,36 @@
-import { Router, Request, Response } from "express";
-import Redis from "ioredis";
+import { Router } from "express";
+import { addWords, getWords } from "../controllers/wordsController";
 
 const router = Router();
-const redis = new Redis();
 
+/**
+ * @swagger
+ * /words/add:
+ *   post:
+ *     summary: Add words to the system
+ *     tags: [Words]
+ *     responses:
+ *       200:
+ *         description: Words stored successfully
+ *       400:
+ *         description: Words already exist or failed to generate words
+ */
 // Store shuffled words
-router.post("/shuffle", async (req: Request, res: Response) => {
-  const { words } = req.body;
-  if (!Array.isArray(words)) res.status(400).json({ error: "Invalid words array" });
+router.post("/add", addWords);
 
-  const shuffleKey = `shuffle:${Date.now()}`;
-  await redis.set(shuffleKey, JSON.stringify(words), "EX", 86400);
-  res.json({ message: "Shuffle stored!", key: shuffleKey });
-});
-
+/**
+ * @swagger
+ * /words:
+ *   get:
+ *     summary: Get the stored words and shuffle
+ *     tags: [Words]
+ *     responses:
+ *       200:
+ *         description: Words and shuffle retrieved successfully
+ *       404:
+ *         description: Words not found
+ */
 // Get shuffled words
-router.get("/:key", async (req, res) => {
-  const data = await redis.get(req.params.key);
-  if (!data) res.status(404).json({ error: "Shuffle not found" });
-
-  res.status(404).json({ error: "Shuffle not found" });
-});
+router.get("/", getWords);
 
 export default router;

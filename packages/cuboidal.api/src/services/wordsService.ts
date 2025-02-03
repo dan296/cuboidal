@@ -1,4 +1,5 @@
 import { CubeMap } from "../interfaces/CubeMap";
+import { Shuffle } from "../interfaces/Shuffle";
 import { WordMap } from "../interfaces/WordMap";
 
 const threeLetterWords = [
@@ -18,7 +19,7 @@ const threeLetterWords = [
 ];
 
 // Example usage
-const wordMap:WordMap = {
+const wordMap: WordMap = {
     "top": ["apple", "acres", "eagle", "slice"],
     "bottom": ["axles", "attic", "stick", "click"],
     "left": ["trick", "track", "knock", "knick"],
@@ -27,7 +28,7 @@ const wordMap:WordMap = {
     "back": ["ether", "earth", "ropes", "hopes"]
 };
 
-function getRandomWords(array:string[], numWords:number, wordException = '') {
+function getRandomWords(array: string[], numWords: number, wordException = '') {
     // Filter out the wordException
     array = array.filter(word => word !== wordException);
     // Fisher-Yates shuffle algorithm
@@ -46,16 +47,16 @@ const opposites: { [key: string]: string } = {
     "front": "back"
 }
 
-function getThreeLetterWord(){
+function getThreeLetterWord() {
     const word = cubeThreeLetterWords[Math.floor(Math.random() * cubeThreeLetterWords.length)];
     cubeThreeLetterWords.splice(cubeThreeLetterWords.indexOf(word), 1);
     return word;
-} 
+}
 
-function createCubeMap(wordMap: WordMap):CubeMap {
+function createCubeMap(wordMap: WordMap): CubeMap {
     const cubeMap = {};
 
-    function addLetterToCubeMap(x:number, y:number, z:number, letter:string, cbMap:CubeMap, plane:keyof typeof opposites) {
+    function addLetterToCubeMap(x: number, y: number, z: number, letter: string, cbMap: CubeMap, plane: keyof typeof opposites) {
         const key = `${x},${y},${z}`;
         if (!cbMap[key]) {
             cbMap[key] = {};
@@ -64,11 +65,11 @@ function createCubeMap(wordMap: WordMap):CubeMap {
         cbMap[key][plane] = letter;
     }
     function processPlane(plane: keyof typeof opposites, xModifier: CoordModifier, yModifier: CoordModifier, zModifier: CoordModifier) {
-        let tmpCubeMap:CubeMap = {};
+        let tmpCubeMap: CubeMap = {};
         const words = wordMap[plane];
         // For 3 letter words 
         const opp = opposites[plane] ?? Object.keys(opposites).find(key => opposites[key] === plane) ?? "top";
-        
+
         let xInit = xModifier.initial;
         let yInit = yModifier.initial;
         words.forEach((word, wordIndex) => {
@@ -107,8 +108,8 @@ function createCubeMap(wordMap: WordMap):CubeMap {
 
                 addLetterToCubeMap(coordMap.x, coordMap.y, coordMap.z, word[i], tmpCubeMap, plane);
                 addLetterToCubeMap(coordMap.x, coordMap.y, coordMap.z, word[i], cubeMap, plane);
-                
-                if(i > 0 && i < word.length - 1){
+
+                if (i > 0 && i < word.length - 1) {
                     addLetterToCubeMap(coordMap.x, coordMap.y, coordMap.z, three_letter_word[three_letter_word.length - (i)], cubeMap, opp);
                 }
 
@@ -118,11 +119,11 @@ function createCubeMap(wordMap: WordMap):CubeMap {
     }
 
     class CoordModifier {
-        initial:number;
-        increment:number;
-        coord:string;
-        curr:number;
-        constructor(initial:number, increment:number, coord:string) {
+        initial: number;
+        increment: number;
+        coord: string;
+        curr: number;
+        constructor(initial: number, increment: number, coord: string) {
             this.initial = initial;
             this.increment = increment;
             this.coord = coord; //"x", "y", "z"
@@ -176,3 +177,31 @@ function createCubeMap(wordMap: WordMap):CubeMap {
 // Step 4: Call shuffle
 // Step 5: Store shuffle in redis
 // Step 6: Send cubeMap and shuffle to client
+function generateWords() {
+    const cubeMap = createCubeMap(wordMap);
+    return cubeMap;
+}
+
+function generateShuffle(): Shuffle {
+    let vertexCubes = 8;
+    let edgeCubes = 36;
+    let shuffle: Shuffle = { vertex: [], edge: [] };
+    shuffle.vertex = generatePairs(vertexCubes);
+    shuffle.edge = generatePairs(edgeCubes);
+    return shuffle;
+}
+
+const generatePairs = (count: number): number[][] => {
+    const pairs = [];
+    for (let i = count - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        pairs.push([i, j]);
+    }
+    return pairs;
+};
+
+export function generateWordsAndShuffle(){
+    const cubeMap = generateWords();
+    const shuffle = generateShuffle();
+    return { cubeMap, shuffle };
+}

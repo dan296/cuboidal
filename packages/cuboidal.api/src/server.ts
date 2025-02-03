@@ -3,7 +3,11 @@ import Redis from "ioredis";
 import dotenv from "dotenv";
 import leaderboardRoutes from "./routes/leaderboard"; 
 import wordsRoutes from "./routes/words";
-
+import cron from "node-cron";
+import { addWords } from "./controllers/wordsController";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerOptions from "./swaggerConfig";
 
 dotenv.config();
 const app = express();
@@ -17,7 +21,28 @@ export const redis = new Redis({
   port: 6379
 });
 
+// Schedule a job to run every day at midnight to wipe the Redis storage
+cron.schedule("0 0 * * *", async () => {
+  try {
+    await redis.flushall();
+    console.log("Redis storage wiped successfully");
+    // Call addWords function
+    const mockRes = {
+      status: (code: number) => ({
+        json: (data: any) => console.log(`Response: ${code}`, data)
+      }),
+      json: (data: any) => console.log("Response:", data)
+    } as unknown as express.Response;
 
+    await addWords(mockRes);
+  } catch (error) {
+    console.error("Error wiping Redis storage:", error);
+  }
+});
+
+// Swagger setup
+const specs = swaggerJsdoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Test route
 app.get("/", async (req, res) => {
@@ -26,5 +51,5 @@ app.get("/", async (req, res) => {
   res.json({ message });
 });
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT ?? 4000;
 app.listen(PORT, () => console.log(`API running on port ${PORT}`));
