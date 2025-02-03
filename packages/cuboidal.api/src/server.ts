@@ -2,7 +2,7 @@ import express from "express";
 import Redis from "ioredis";
 import dotenv from "dotenv";
 import leaderboardRoutes from "./routes/leaderboard"; 
-import wordsRoutes from "./routes/words"; // ✅ Make sure this import is correct
+import wordsRoutes from "./routes/words";
 
 
 dotenv.config();
@@ -12,10 +12,12 @@ app.use(express.json());
 app.use("/leaderboard", leaderboardRoutes);
 app.use("/words", wordsRoutes);
 
-const redis = new Redis({
-  host: process.env.REDIS_HOST || "localhost",
+export const redis = new Redis({
+  host: process.env.REDIS_HOST ?? "localhost",
   port: 6379
 });
+
+
 
 // Test route
 app.get("/", async (req, res) => {

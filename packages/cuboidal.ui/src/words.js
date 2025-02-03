@@ -1046,6 +1046,12 @@ const cubeThreeLetterWords = [...getRandomWords(threeLetterWords, 24)];
 
 console.log(cubeThreeLetterWords);
 
+function getThreeLetterWord(){
+    const word = cubeThreeLetterWords[Math.floor(Math.random() * cubeThreeLetterWords.length)];
+    cubeThreeLetterWords.splice(cubeThreeLetterWords.indexOf(word), 1);
+    return word;
+} 
+
 function createCubeMap(wordMap) {
     const cubeMap = {};
 
