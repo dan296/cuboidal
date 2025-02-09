@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import settings from "./settings";
 import Cube from "./classes/cube";
-import getWordsForCube from "./words";
 import { DragControls } from "three/examples/jsm/Addons.js";
+import config from './config';
 
 // Add event listener to close the modal based on the parent element's ID
 document.querySelectorAll(".close").forEach(element => {
@@ -124,7 +124,39 @@ function addCube(x, y, z) {
   positions.add(key); // Store the unique key in the Set
 }
 
-const words = getWordsForCube();
+let words = {};
+
+async function fetchWords() {
+  try {
+    const response = await fetch(`${config.apiBaseUrl}/words`);
+    console.log(response);
+    if (!response.ok) {
+      throw new Error('Failed to fetch words');
+    }
+    const data = await response.json();
+    return data.words;
+  } catch (error) {
+    console.error('Error fetching words:', error);
+    return {};
+  }
+}
+
+async function initialize() {
+  words = await fetchWords();
+  for (let x of offsets) {
+    for (let y of offsets) {
+      for (let i = 0; i < edgeCubes; i++) {
+        const position = -1 + i * spacing; // Incremental positions for the edge cubes
+        // Add cubes along the X, Y, and Z edges
+        addCube(position, y, x);
+        addCube(x, position, y);
+        addCube(y, x, position);
+      }
+    }
+  }
+}
+
+await initialize();
 
 function getLettersForCube(x, y, z) {
   // check position of cube
@@ -155,18 +187,6 @@ function swapCubes(cubeArray, numSwaps){
     numSwaps++;
   }
 
-}
-
-for (let x of offsets) {
-  for (let y of offsets) {
-    for (let i = 0; i < edgeCubes; i++) {
-      const position = -1 + i * spacing; // Incremental positions for the edge cubes
-      // Add cubes along the X, Y, and Z edges
-      addCube(position, y, x);
-      addCube(x, position, y);
-      addCube(y, x, position);
-    }
-  }
 }
 
 // responsive

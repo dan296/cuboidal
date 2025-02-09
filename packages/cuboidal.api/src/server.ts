@@ -1,6 +1,7 @@
 import express from "express";
 import Redis from "ioredis";
 import dotenv from "dotenv";
+import cors from "cors"; // Import the CORS middleware
 import leaderboardRoutes from "./routes/leaderboard"; 
 import wordsRoutes from "./routes/words";
 import cron from "node-cron";
@@ -11,6 +12,7 @@ import swaggerOptions from "./swaggerConfig";
 
 dotenv.config();
 const app = express();
+app.use(cors()); // Enable CORS
 app.use(express.json());
 // Register routes correctly
 app.use("/leaderboard", leaderboardRoutes);
