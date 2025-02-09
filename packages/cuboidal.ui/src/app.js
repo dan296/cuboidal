@@ -125,8 +125,9 @@ function addCube(x, y, z) {
 }
 
 let words = {};
+let shuffle = {};
 
-async function fetchWords() {
+async function fetchWordsAndShuffle() {
   try {
     const response = await fetch(`${config.apiBaseUrl}/words`);
     console.log(response);
@@ -134,7 +135,7 @@ async function fetchWords() {
       throw new Error('Failed to fetch words');
     }
     const data = await response.json();
-    return data.words;
+    return data;
   } catch (error) {
     console.error('Error fetching words:', error);
     return {};
@@ -142,7 +143,9 @@ async function fetchWords() {
 }
 
 async function initialize() {
-  words = await fetchWords();
+  let res = await fetchWordsAndShuffle();
+  words = res.words;
+  shuffle = res.shuffle;
   for (let x of offsets) {
     for (let y of offsets) {
       for (let i = 0; i < edgeCubes; i++) {
@@ -172,21 +175,18 @@ function shuffleCubes() {
   let cubes = scene.children.filter(cube => cube instanceof Cube && !cube.disabled);
   let vertexCubes = cubes.filter(cube => cube.is_vertex);
   let edgeCubes = cubes.filter(cube => !cube.is_vertex);
-  swapCubes(vertexCubes, numberOfSwaps);
-  swapCubes(edgeCubes, numberOfSwaps);
+  applyShuffle(vertexCubes, shuffle.vertex);
+  applyShuffle(edgeCubes, shuffle.edge);
   for (const cube of cubes) {
     cube.resetPosition();
   }
-  console.log(`Number of swaps: ${numberOfSwaps}`);
 }
 
-function swapCubes(cubeArray, numSwaps){
-  for (let i = cubeArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+function applyShuffle(cubeArray, shuffleArray) {
+  for (let [i, j] of shuffleArray) {
     cubeArray[i].swap(cubeArray[j]);
-    numSwaps++;
+    numberOfSwaps++;
   }
-
 }
 
 // responsive
