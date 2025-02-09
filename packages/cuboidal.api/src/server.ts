@@ -27,6 +27,10 @@ cron.schedule("0 0 * * *", async () => {
     await redis.flushall();
     console.log("Redis storage wiped successfully");
     // Call addWords function
+    // Create mock request and response objects
+    const mockReq = {
+      body: {}
+    } as express.Request;
     const mockRes = {
       status: (code: number) => ({
         json: (data: any) => console.log(`Response: ${code}`, data)
@@ -34,7 +38,7 @@ cron.schedule("0 0 * * *", async () => {
       json: (data: any) => console.log("Response:", data)
     } as unknown as express.Response;
 
-    await addWords(mockRes);
+    await addWords(mockReq, mockRes);
   } catch (error) {
     console.error("Error wiping Redis storage:", error);
   }
