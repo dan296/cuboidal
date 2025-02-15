@@ -154,7 +154,7 @@ async function initialize() {
         // Add cubes along the X, Y, and Z edges
         addCube(position, y, x);
         addCube(x, position, y);
-        addCube(y, x, position);
+        addCube(x, y, position);
       }
     }
   }
@@ -564,10 +564,6 @@ function splitNumToCards(num, id){
   });
 }
 
-/*
-TODO: Add timer when close instructions is clicked first time
-TODO: Add a rotations and swaps counter
-*/
 let gameOver = false;
 function endGame(msg){
   timerInterval = clearInterval(timerInterval);

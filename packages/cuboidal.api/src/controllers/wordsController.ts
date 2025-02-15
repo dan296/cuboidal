@@ -31,8 +31,8 @@ export async function getWords(req: Request, res: Response) {
     const words = await redis.get(WORDS_KEY);
     const shuffle = await redis.get(SHUFFLE_KEY);
     if (!words || !shuffle){
-        res.status(404).json({ error: "Words not found" });
-        return;
+        await addWords(req, res);
+        return await getWords(req, res);
     }
 
     res.json({ words: JSON.parse(words ?? ""), shuffle: JSON.parse(shuffle ?? "") });
