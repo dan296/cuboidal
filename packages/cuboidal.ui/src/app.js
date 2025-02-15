@@ -1,11 +1,10 @@
 import * as THREE from "three";
-import settings from "./settings";
 import Cube from "./classes/cube";
 import { DragControls } from "three/examples/jsm/Addons.js";
-import config from './config';
+import config from "./config";
 
 // Add event listener to close the modal based on the parent element's ID
-document.querySelectorAll(".close").forEach(element => {
+document.querySelectorAll(".close").forEach((element) => {
   element.addEventListener("click", () => {
     const parentElement = element.parentElement;
     const modalId = parentElement.id;
@@ -14,24 +13,25 @@ document.querySelectorAll(".close").forEach(element => {
 });
 
 // Add event listener to open the modal based on the data-modal attribute
-document.querySelectorAll(".open").forEach(element => {
+document.querySelectorAll(".open").forEach((element) => {
   element.addEventListener("click", () => {
     const modalId = element.getAttribute("data-modal");
     showModal(modalId);
   });
 });
 
-function showModal(id, delay = 10){
+function showModal(id, delay = 10) {
   // Hide all other modals except the one with the matching ID
-  document.querySelectorAll('.modal').forEach(modal => {
+  document.querySelectorAll(".modal").forEach((modal) => {
     if (modal.id !== id) {
-      modal.classList.remove('show');
-      modal.classList.add('hide');
+      modal.classList.remove("show");
+      modal.classList.add("hide");
       setTimeout(() => {
-        modal.style.display = 'none';
+        modal.style.display = "none";
       }, 500); // Match the duration of the CSS transition
     }
   });
+  if (id === "leaderboard") updateLeaderBoard();
   const div = document.getElementById(id);
   div.style.display = "flex";
   setTimeout(() => {
@@ -40,8 +40,9 @@ function showModal(id, delay = 10){
   }, delay); // Small delay to ensure the display change is applied
 }
 
-function hideModal(id){
+function hideModal(id) {
   const div = document.getElementById(id);
+  if (id == "instructions" && timerInterval == null && !gameOver) startTimer();
   div.classList.remove("show");
   div.classList.add("hide");
   setTimeout(() => {
@@ -49,7 +50,7 @@ function hideModal(id){
   }, 500); // Match the duration of the CSS transition
 }
 
-window.addEventListener("load", function() {
+window.addEventListener("load", function () {
   // Show the content by removing the hidden class from the body
   document.body.classList.remove("hidden");
 
@@ -89,7 +90,7 @@ scene.add(ambientLight);
 scene.add(pointLight);
 // Rotate the scene for an isometric view
 scene.rotation.x = Math.PI / 6; // 45 degrees
-scene.rotation.y =  -Math.PI / 3;//Math.atan(Math.sqrt(2)); // Approximately 35.264 degrees
+scene.rotation.y = -Math.PI / 3; //Math.atan(Math.sqrt(2)); // Approximately 35.264 degrees
 // Generate a wireframe of smaller cubes
 const edgeCubes = 5; // Number of cubes per edge
 const spacing = 0.5; // Spacing between the cubes
@@ -113,10 +114,10 @@ function addCube(x, y, z) {
     letters["top"] ? letters["top"] : "",
     letters["bottom"] ? letters["bottom"] : "",
     letters["front"] ? letters["front"] : "",
-    letters["back"] ? letters["back"] : ""
+    letters["back"] ? letters["back"] : "",
   ];
 
-  letters = letters.map(l => l.toUpperCase());
+  letters = letters.map((l) => l.toUpperCase());
 
   // right, left, top, bottom, front, back
   const cube = new Cube(x, y, z, letters);
@@ -132,12 +133,12 @@ async function fetchWordsAndShuffle() {
     const response = await fetch(`${config.apiBaseUrl}/words`);
     console.log(response);
     if (!response.ok) {
-      throw new Error('Failed to fetch words');
+      throw new Error("Failed to fetch words");
     }
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching words:', error);
+    console.error("Error fetching words:", error);
     return {};
   }
 }
@@ -168,13 +169,16 @@ function getLettersForCube(x, y, z) {
   // check if at least 2 of the coordinates are -1 or 1
   const key = `${x},${y},${z}`;
   return words[key];
-
 }
 let numberOfSwaps = 0;
+let numberOfRotations = 0;
+let timeRemaining = 10; // seconds
 function shuffleCubes() {
-  let cubes = scene.children.filter(cube => cube instanceof Cube && !cube.disabled);
-  let vertexCubes = cubes.filter(cube => cube.is_vertex);
-  let edgeCubes = cubes.filter(cube => !cube.is_vertex);
+  let cubes = scene.children.filter(
+    (cube) => cube instanceof Cube && !cube.disabled
+  );
+  let vertexCubes = cubes.filter((cube) => cube.is_vertex);
+  let edgeCubes = cubes.filter((cube) => !cube.is_vertex);
   applyShuffle(vertexCubes, shuffle.vertex);
   applyShuffle(edgeCubes, shuffle.edge);
   for (const cube of cubes) {
@@ -187,6 +191,39 @@ function applyShuffle(cubeArray, shuffleArray) {
     cubeArray[i].swap(cubeArray[j]);
     numberOfSwaps++;
   }
+  updateSwaps();
+}
+
+function updateSwaps(){
+  splitNumToCards(numberOfSwaps, "swaps");
+  if(numberOfSwaps == 0) endGame();
+}
+
+function updateRotations(){
+  numberOfRotations -= 1;
+  splitNumToCards(numberOfRotations, "rotations");
+  if(numberOfRotations == 0) endGame();
+}
+
+function updateTime(){
+  let timeMin = Math.floor(timeRemaining / 60);
+  if (timeMin < 10) timeMin = "0" + timeMin;
+  let timeSec = timeRemaining % 60;
+  if (timeSec < 10) timeSec = "0" + timeSec;
+
+  splitNumToCards(timeMin, "time-min");
+  splitNumToCards(timeSec, "time-sec");
+
+  if(timeRemaining == 0) endGame();
+}
+
+let timerInterval = null;
+
+function startTimer(){
+  timerInterval = setInterval(() => {
+    timeRemaining -= 1;
+    updateTime();
+  }, 1000);
 }
 
 // responsive
@@ -233,7 +270,9 @@ window.addEventListener("pointermove", (e) => {
       if (hits.length === 2) hits.pop();
       hits.push(intersects[1]);
     }
-    const selectedCubeIndex = hits.findIndex(hit => hit != null && hit.object.uuid === selectedCube.uuid);
+    const selectedCubeIndex = hits.findIndex(
+      (hit) => hit != null && hit.object.uuid === selectedCube.uuid
+    );
     if (selectedCubeIndex === -1) {
       hits.pop();
       hits.push({ object: selectedCube });
@@ -242,7 +281,8 @@ window.addEventListener("pointermove", (e) => {
 
   // Get the keys of the hits array
   let hitKeys = [];
-  if (hits.length > 0) hitKeys = hits.filter(hit => hit != null).map(hit => hit.object.uuid);
+  if (hits.length > 0)
+    hitKeys = hits.filter((hit) => hit != null).map((hit) => hit.object.uuid);
   // If a previously hovered item is not among the hits we must call onPointerOut
   Object.keys(hovered).forEach((key) => {
     if (!hitKeys.includes(key)) {
@@ -265,7 +305,6 @@ window.addEventListener("pointermove", (e) => {
       }
     }
   }
-
 });
 
 // Function to update the mouse position
@@ -295,7 +334,7 @@ function onMouseDown(event) {
   const intersects = raycaster.intersectObjects(scene.children); // Detect cubes in the scene
   if (intersects.length > 0) {
     selectedCube = intersects[0].object;
-    if (selectedCube.disabled){
+    if (selectedCube.disabled) {
       selectedCube = null;
       return; // Skip if the cube is disabled
     }
@@ -312,7 +351,9 @@ function onMouseUp(event) {
   if (selectedCube) {
     if (isCubeDragging) {
       raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(scene.children).filter(intersect => intersect.object !== selectedCube);
+      const intersects = raycaster
+        .intersectObjects(scene.children)
+        .filter((intersect) => intersect.object !== selectedCube);
 
       if (
         intersects.length > 0 &&
@@ -323,6 +364,8 @@ function onMouseUp(event) {
         const hoverCube = intersects[0].object;
         // Swap positions
         selectedCube.swap(hoverCube);
+        numberOfSwaps -= 1;
+        updateSwaps();
       } else {
         selectedCube.resetPosition();
       }
@@ -351,7 +394,10 @@ window.addEventListener("mousemove", onMouseMove);
 window.addEventListener("mousedown", onMouseDown);
 window.addEventListener("mouseup", onMouseUp);
 
-const orientationCube = new Cube(0, 0, 0,
+const orientationCube = new Cube(
+  0,
+  0,
+  0,
   ["RIGHT", "LEFT", "TOP", "BOTTOM", "FRONT", "BACK"],
   5,
   true,
@@ -412,7 +458,7 @@ function onMouseClick(event) {
 }
 
 function freezeCubes() {
-  scene.children.forEach(child => {
+  scene.children.forEach((child) => {
     if (child instanceof Cube && child.disabled) {
       child.position.copy(child.lastStaticPosition);
     }
@@ -431,10 +477,103 @@ function animate(t) {
 animate();
 
 shuffleCubes();
+updateTime();
 const dControls = new DragControls(scene.children, camera, renderer.domElement);
+
+async function getLeaderBoard(ind = 0) {
+  try {
+    const response = await fetch(`${config.apiBaseUrl}/leaderboard/${ind}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch leaderboard");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    return {};
+  }
+}
+
+function updateLeaderBoard() {
+  getLeaderBoard().then((data) => {
+    const leaderboard = document.getElementById("leaderboard");
+    const table = leaderboard.querySelector(".scroll-container");
+    table.innerHTML = ""; // Clear existing content
+
+    data = data.leaderboard;
+    for (const item of data) {
+      const row = document.createElement("div");
+      row.classList.add("row");
+
+      const rank = document.createElement("div");
+      rank.classList.add("col");
+      rank.textContent = `#${item.rank}`;
+      row.appendChild(rank);
+
+      const name = document.createElement("div");
+      name.classList.add("col");
+      name.textContent = item.player;
+      row.appendChild(name);
+
+      const score = document.createElement("div");
+      score.classList.add("col");
+      score.textContent = item.moves;
+      row.appendChild(score);
+
+      const time = document.createElement("div");
+      time.classList.add("col");
+      time.textContent = item.timeString;
+      row.appendChild(time);
+
+      table.appendChild(row);
+    }
+  });
+}
+
+function filterPlayerList(name) {
+  const leaderboard = document.getElementById("leaderboard");
+  const table = leaderboard.querySelector(".scroll-container");
+  // filter the table
+  const rows = table.querySelectorAll(".row");
+  rows.forEach((row) => {
+    const playerName = row.querySelector(".col:nth-child(2)").textContent;
+    if (playerName.toLowerCase().includes(name.toLowerCase())) {
+      row.style.display = "flex";
+    } else {
+      row.style.display = "none";
+    }
+  });
+
+}
+
+// Add event listener to the search input
+const searchInput = document.getElementById("search");
+searchInput.addEventListener("input", (event) => {
+  filterPlayerList(event.target.value);
+});
+
+function splitNumToCards(num, id){
+  let div = document.getElementById(id);
+  div.innerHTML = "";
+  let nums = num.toString().split("");
+  nums.forEach((num) => {
+    let card = document.createElement("div");
+    card.classList.add("num-card");
+    card.textContent = num;
+    div.appendChild(card);
+  });
+}
 
 /*
 TODO: Add timer when close instructions is clicked first time
-TODO: Lock in correct cubes (disable them)
 TODO: Add a rotations and swaps counter
 */
+let gameOver = false;
+function endGame(msg){
+  timerInterval = clearInterval(timerInterval);
+  timerInterval = null;
+  dControls.disconnect();
+  gameOver = true;
+  showModal("game-over");
+  if(msg) document.getElementById("game-over-msg").textContent = msg;
+}

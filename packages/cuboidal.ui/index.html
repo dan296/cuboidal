@@ -33,7 +33,7 @@
     <div id="tracker-container">
       <div class="tracker">
         <div class="tracker-label">Rotations Remaining</div>
-        <div class="tracker-value">
+        <div id="rotations" class="tracker-value">
           <div class="num-card">4</div>
           <div class="num-card">0</div>
         </div>
@@ -41,16 +41,20 @@
       <div class="tracker">
         <div class="tracker-label">Time</div>
         <div class="tracker-value">
+        <div id="time-min" class="tracker-value">
           <div class="num-card">6</div>
           <div class="num-card">0</div>
+          </div>
           :
+          <div id="time-sec" class="tracker-value">
           <div class="num-card">0</div>
           <div class="num-card">0</div>
         </div>
       </div>
+      </div>
       <div class="tracker">
         <div class="tracker-label">Swaps Remaining</div>
-        <div class="tracker-value">
+        <div id="swaps" class="tracker-value">
           <div class="num-card">4</div>
           <div class="num-card">0</div>
         </div>
@@ -173,6 +177,13 @@
         </div>
       </div>
     </div>  
+    <div id="game-over" class="modal perf-center">
+      <div class="close">
+        <div class="bar rotate-45 perf-center"></div>
+        <div class="bar rotate-45-neg perf-center"></div>
+      </div>
+      <h2>Game Over!</h2>
+    </div>
     <script type="module" src="./src/app.js"></script>
   </body>
 </html>
