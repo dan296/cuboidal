@@ -5,6 +5,11 @@ import { sortPlayersAndConvertTime } from "../services/leaderboardService";
 const redis = new Redis();
 
 export async function addPlayer(req: Request, res: Response): Promise<void> {
+  if(redis.status != "ready"){
+    res.status(500).json({ error: "Redis is not ready" });
+    return;
+  }
+
   const { player, moves, time } = req.body;
   if (!player || moves == null || time == null) {
     res.status(400).json({ error: "Invalid data" });
@@ -28,6 +33,11 @@ export async function addPlayer(req: Request, res: Response): Promise<void> {
 }
 
 export async function getPlayers(req: Request, res: Response): Promise<void> {
+  if(redis.status != "ready"){
+    res.status(500).json({ error: "Redis is not ready" });
+    return;
+  } 
+
   const index = parseInt(req.params.index, 10);
   if (isNaN(index)) {
     res.status(400).json({ error: "Invalid index" });

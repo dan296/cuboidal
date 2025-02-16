@@ -6,33 +6,43 @@ const redis = new Redis();
 const WORDS_KEY = "words:fixed";
 const SHUFFLE_KEY = "shuffle:fixed";
 
-export async function addWords(req: Request, res: Response): Promise<void> {
+export async function addWords(): Promise<void> {
+    if(redis.status != "ready"){
+        throw new Error("Redis is not ready");
+    }
+
     // Check if the words already exist
     const wordsExist = await redis.exists(WORDS_KEY);
-    if (wordsExist) { 
-        res.status(400).json({ error: "Words already exist" });
-        return;
-    }
+    if (wordsExist) return;
 
     const { cubeMap, shuffle } = generateWordsAndShuffle();
 
     if (cubeMap == null || shuffle == null){
-        res.status(400).json({ error: "Failed to generate words" });
-        return;
+        throw new Error("Failed to generate words");
     }
 
     // Store the words
     await redis.set(WORDS_KEY, JSON.stringify(cubeMap), "EX", 86400);
     await redis.set(SHUFFLE_KEY, JSON.stringify(shuffle), "EX", 86400);
-    res.json({ message: "Words stored!" });
 }
 
 export async function getWords(req: Request, res: Response) {
-    const words = await redis.get(WORDS_KEY);
-    const shuffle = await redis.get(SHUFFLE_KEY);
+    if(redis.status != "ready"){
+        res.status(500).json({ error: "Redis is not ready" });
+        return;
+    }
+
+    let words = await redis.get(WORDS_KEY);
+    let shuffle = await redis.get(SHUFFLE_KEY);
     if (!words || !shuffle){
-        await addWords(req, res);
-        return await getWords(req, res);
+        try {
+            await addWords();
+            words = await redis.get(WORDS_KEY);
+            shuffle = await redis.get(SHUFFLE_KEY);
+        } catch (error) {
+            res.status(500).json({ error: (error as Error).message });
+            return;
+        }
     }
 
     res.json({ words: JSON.parse(words ?? ""), shuffle: JSON.parse(shuffle ?? "") });
