@@ -172,7 +172,7 @@ function getLettersForCube(x, y, z) {
 }
 let numberOfSwaps = 0;
 let numberOfRotations = 0;
-let timeRemaining = 10; // seconds
+let timeRemaining = 3600; // seconds
 function shuffleCubes() {
   let cubes = scene.children.filter(
     (cube) => cube instanceof Cube && !cube.disabled
