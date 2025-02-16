@@ -1,22 +1,8 @@
 import { Router } from "express";
-import { addWords, getWords } from "../controllers/wordsController";
+import { getWords } from "../controllers/wordsController";
+import { checkRedisReady } from "../config/redis";
 
 const router = Router();
-
-/**
- * @swagger
- * /words/add:
- *   post:
- *     summary: Add words to the system
- *     tags: [Words]
- *     responses:
- *       200:
- *         description: Words stored successfully
- *       400:
- *         description: Words already exist or failed to generate words
- */
-// Store shuffled words
-router.post("/add", addWords);
 
 /**
  * @swagger
@@ -31,6 +17,6 @@ router.post("/add", addWords);
  *         description: Words not found
  */
 // Get shuffled words
-router.get("/", getWords);
+router.get("/", checkRedisReady, getWords);
 
 export default router;

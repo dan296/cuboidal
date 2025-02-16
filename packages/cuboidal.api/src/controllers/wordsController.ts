@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import Redis from "ioredis";
+import redis from "../config/redis";
 import { generateWordsAndShuffle } from "../services/wordsService";
 
-const redis = new Redis();
 const WORDS_KEY = "words:fixed";
 const SHUFFLE_KEY = "shuffle:fixed";
 
@@ -27,13 +26,9 @@ export async function addWords(): Promise<void> {
 }
 
 export async function getWords(req: Request, res: Response) {
-    if(redis.status != "ready"){
-        res.status(500).json({ error: "Redis is not ready" });
-        return;
-    }
-
     let words = await redis.get(WORDS_KEY);
     let shuffle = await redis.get(SHUFFLE_KEY);
+    
     if (!words || !shuffle){
         try {
             await addWords();

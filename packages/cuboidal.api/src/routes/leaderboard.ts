@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { addPlayer, getPlayers } from "../controllers/leaderboardController";
+import { checkRedisReady } from "../config/redis";
 
 const router = Router();
 
@@ -29,7 +30,7 @@ const router = Router();
  *         description: Invalid data or player already exists
  */
 // Add a player to the leaderboard
-router.post("/add", addPlayer);
+router.post("/add", checkRedisReady, addPlayer);
 
 /**
  * @swagger
@@ -51,6 +52,6 @@ router.post("/add", addPlayer);
  *         description: Invalid index
  */
 // Get top 50 players sorted by moves then by time
-router.get("/:index", getPlayers);
+router.get("/:index",checkRedisReady, getPlayers);
 
 export default router;
